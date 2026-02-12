@@ -1,6 +1,5 @@
 "use client";
 
-import { useI18n } from "@/hooks/useI18n";
 import { Spin } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
@@ -11,7 +10,6 @@ const AUTH_EVENT = "auth:state-change";
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useI18n();
 
   const authState = useSyncExternalStore<boolean | null>(
     (callback) => {
