@@ -1,15 +1,26 @@
 "use client";
 
 import { useI18n } from "@/hooks/useI18n";
-import { Button, Checkbox, Input } from "antd";
+import { Button, Checkbox, Form, Input } from "antd";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
   const { t } = useI18n();
 
-  const handleLogin = () => {
+  const [form] = Form.useForm();
+
+  const handleLogin = (values: { email: string; password: string; remember?: boolean }) => {
+    const { email, password } = values;
+    if (!email || !password) return; // validation enforced by Form rules but keep guard
+    // simple auth mock: accept any non-empty values
     localStorage.setItem("auth:loggedIn", "true");
+    // optionally trigger storage event for sync
+    try {
+      window.dispatchEvent(new Event("auth:state-change"));
+    } catch {
+      // ignore
+    }
     router.replace("/");
   };
 
@@ -24,29 +35,38 @@ export default function LoginPage() {
           <p className="mt-1 text-sm text-slate-500">{t("login.subtitle")}</p>
         </div>
 
-        <form className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-600" htmlFor="email">
-              {t("login.email")}
-            </label>
-            <Input id="email" type="email" placeholder="admin@company.com" className="mt-2" />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-600" htmlFor="password">
-              {t("login.password")}
-            </label>
-            <Input id="password" type="password" placeholder="••••••••" className="mt-2" />
-          </div>
+        <Form form={form} layout="vertical" onFinish={handleLogin} className="space-y-4">
+          <Form.Item
+            label={t("login.email")}
+            name="email"
+            rules={[{ required: true, message: t("forms.required") }]}
+          >
+            <Input type="email" placeholder="admin@company.com" />
+          </Form.Item>
+
+          <Form.Item
+            label={t("login.password")}
+            name="password"
+            rules={[{ required: true, message: t("forms.required") }]}
+          >
+            <Input type="password" placeholder="••••••••" />
+          </Form.Item>
+
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <Checkbox>{t("login.remember")}</Checkbox>
+            <Form.Item name="remember" valuePropName="checked" noStyle>
+              <Checkbox>{t("login.remember")}</Checkbox>
+            </Form.Item>
             <Button type="link" size="small">
               {t("login.forgot")}
             </Button>
           </div>
-          <Button type="primary" onClick={handleLogin} className="w-full">
-            {t("login.button")}
-          </Button>
-        </form>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" className="w-full">
+              {t("login.button")}
+            </Button>
+          </Form.Item>
+        </Form>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import CountUp from "@/components/CountUp";
 import { useI18n } from "@/hooks/useI18n";
 
 export default function Home() {
@@ -9,14 +10,24 @@ export default function Home() {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: t("dashboard.activeUsers"), value: "1,248" },
-          { label: t("dashboard.activeTokens"), value: "3,921" },
-          { label: t("dashboard.lockedTokens"), value: "24" },
+          { label: t("dashboard.activeUsers"), value: 1248 },
+          { label: t("dashboard.activeTokens"), value: 3921 },
+          { label: t("dashboard.lockedTokens"), value: 24 },
           { label: t("dashboard.failRate"), value: "1.8%" },
         ].map((card) => (
           <div key={card.label} className="rounded-xl border border-slate-200 bg-white p-4">
             <p className="text-xs font-medium uppercase text-slate-500">{card.label}</p>
-            <p className="mt-3 text-2xl font-semibold text-slate-900">{card.value}</p>
+            <p className="mt-3 text-2xl font-semibold text-slate-900">
+              {typeof card.value === "number" ? (
+                <CountUp
+                  end={card.value}
+                  duration={900}
+                  format={(v) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                />
+              ) : (
+                card.value
+              )}
+            </p>
           </div>
         ))}
       </div>

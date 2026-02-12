@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Button, Input, Select, Tooltip } from "antd";
-import { z } from "zod";
 import { useI18n } from "@/hooks/useI18n";
+import { Button, Form, Input, Select, Tooltip } from "antd";
+import { useState } from "react";
 
 export type AppFormValues = {
   id: string;
@@ -34,99 +33,77 @@ export default function AppForm({
   disabledReason,
 }: AppFormProps) {
   const { t } = useI18n();
-  const [values, setValues] = useState<AppFormValues>(initialValues);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [form] = Form.useForm<AppFormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const schema = z.object({
-    id: z.string().min(3, t("forms.minLength")),
-    name: z.string().min(3, t("forms.minLength")),
-    policy: z.string().min(1, t("forms.required")),
-    status: z.enum(["Active", "Paused"]),
-  });
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const parsed = schema.safeParse(values);
-    if (!parsed.success) {
-      const nextErrors: Record<string, string> = {};
-      parsed.error.issues.forEach((issue) => {
-        const key = issue.path[0];
-        if (typeof key === "string") nextErrors[key] = issue.message;
-      });
-      setErrors(nextErrors);
-      return;
-    }
-    setErrors({});
+  const handleFinish = async (vals: AppFormValues) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(values);
+      await onSubmit(vals);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <Form
+      form={form}
+      initialValues={initialValues}
+      layout="vertical"
+      onFinish={handleFinish}
+      className="space-y-6"
+    >
       <header className="rounded-xl border border-slate-200 bg-white p-6">
         <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
       </header>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="text-xs font-semibold text-slate-600">{t("apps.appId")}</label>
-            <Input
-              value={values.id}
-              disabled={disableId || isReadOnly}
-              onChange={(event) => setValues((prev) => ({ ...prev, id: event.target.value }))}
-              className="mt-2"
-            />
-            {errors.id ? <p className="mt-1 text-xs text-rose-600">{errors.id}</p> : null}
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-600">{t("apps.name")}</label>
-            <Input
-              value={values.name}
-              disabled={isReadOnly}
-              onChange={(event) => setValues((prev) => ({ ...prev, name: event.target.value }))}
-              className="mt-2"
-            />
-            {errors.name ? <p className="mt-1 text-xs text-rose-600">{errors.name}</p> : null}
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-600">{t("apps.policy")}</label>
+          <Form.Item
+            name="id"
+            label={t("apps.appId")}
+            rules={[{ required: true, min: 3, message: t("forms.minLength") }]}
+          >
+            <Input disabled={disableId || isReadOnly} className="mt-2" />
+          </Form.Item>
+
+          <Form.Item
+            name="name"
+            label={t("apps.name")}
+            rules={[{ required: true, min: 3, message: t("forms.minLength") }]}
+          >
+            <Input disabled={isReadOnly} className="mt-2" />
+          </Form.Item>
+
+          <Form.Item
+            name="policy"
+            label={t("apps.policy")}
+            rules={[{ required: true, message: t("forms.required") }]}
+          >
             <Select
-              value={values.policy}
               disabled={isReadOnly}
-              onChange={(value) => setValues((prev) => ({ ...prev, policy: value }))}
               className="mt-2 w-full"
               options={[
                 { value: "", label: t("table.all") },
                 ...policyOptions.map((option) => ({ value: option, label: option })),
               ]}
             />
-            {errors.policy ? <p className="mt-1 text-xs text-rose-600">{errors.policy}</p> : null}
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-600">{t("apps.status")}</label>
+          </Form.Item>
+
+          <Form.Item
+            name="status"
+            label={t("apps.status")}
+            rules={[{ required: true, message: t("forms.required") }]}
+          >
             <Select
-              value={values.status}
               disabled={isReadOnly}
-              onChange={(value) =>
-                setValues((prev) => ({
-                  ...prev,
-                  status: value as AppFormValues["status"],
-                }))
-              }
               className="mt-2 w-full"
               options={[
                 { value: "Active", label: t("apps.statusActive") },
                 { value: "Paused", label: t("apps.statusPaused") },
               ]}
             />
-            {errors.status ? <p className="mt-1 text-xs text-rose-600">{errors.status}</p> : null}
-          </div>
+          </Form.Item>
         </div>
       </section>
 
@@ -142,6 +119,6 @@ export default function AppForm({
           </span>
         </Tooltip>
       </div>
-    </form>
+    </Form>
   );
 }
