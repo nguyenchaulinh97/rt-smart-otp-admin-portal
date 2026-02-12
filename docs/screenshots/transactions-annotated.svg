@@ -1,0 +1,29 @@
+<svg width="1200" height="720" viewBox="0 0 1200 720" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #e2e8f0; stroke-width: 2; }
+      .title { font: 600 24px 'Inter', sans-serif; fill: #0f172a; }
+      .text { font: 500 14px 'Inter', sans-serif; fill: #334155; }
+      .muted { font: 400 12px 'Inter', sans-serif; fill: #64748b; }
+      .tag { fill: #e2e8f0; }
+      .accent { fill: #e35561; }
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="720" />
+  <rect class="panel" x="48" y="40" width="1104" height="640" rx="16" />
+  <rect class="accent" x="80" y="72" width="8" height="28" rx="4" />
+  <text class="title" x="100" y="94">Transactions</text>
+  <text class="muted" x="100" y="118">Danh sách giao dịch OTP (placeholder)</text>
+
+  <rect class="panel" x="80" y="150" width="1040" height="96" rx="12" />
+  <text class="text" x="104" y="186">Filters: Transaction ID • User • Device • Status</text>
+  <text class="muted" x="104" y="210">(Ảnh sẽ được thay bằng màn hình thật)</text>
+
+  <rect class="panel" x="80" y="270" width="1040" height="360" rx="12" />
+  <text class="text" x="104" y="310">Transaction List Table</text>
+  <rect class="tag" x="104" y="332" width="96" height="24" rx="12" />
+  <text class="muted" x="112" y="348">Active</text>
+  <rect class="tag" x="210" y="332" width="96" height="24" rx="12" />
+  <text class="muted" x="218" y="348">Expired</text>
+</svg>
