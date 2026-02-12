@@ -60,88 +60,91 @@ export default function TokenDetailPage() {
         </Link>
       </div>
 
-      <Card>
-        <Descriptions
-          size="small"
-          column={{ xs: 1, sm: 2, lg: 3 }}
-          items={[
-            { key: "app", label: t("tokens.app"), children: data.appId },
-            { key: "status", label: t("tokens.status"), children: getStatusLabel(data.status, t) },
-            {
-              key: "createdAt",
-              label: t("logs.createdAt"),
-              children: formatDate(data.createdAt, locale),
-            },
-          ]}
-        />
-      </Card>
-
-      <Card title={t("tokens.lastUsed")}>
-        <Typography.Text type="secondary">{data.lastUsed}</Typography.Text>
-      </Card>
-
-      <Card title={t("logs.timelineTitle")}>
-        <ActivityTimeline
-          items={[
-            {
-              label: `${t("logs.createdAt")} • ${formatDate(data.createdAt, locale)}`,
-              time: formatDate(data.createdAt, locale),
-            },
-            {
-              label: `${t("tokens.lastUsed")} • ${data.lastUsed}`,
-              time: formatDateTime(data.lastUsed, locale),
-            },
-          ]}
-        />
-      </Card>
-
-      <Card
-        title={t("tokens.enrollmentTitle")}
-        extra={
-          <Button
-            type="default"
+      <div className="grid gap-4">
+        <Card>
+          <Descriptions
             size="small"
-            onClick={() => setIsRevealed(true)}
-            disabled={isRevealed}
-          >
-            {isRevealed ? t("tokens.revealed") : t("tokens.reveal")}
-          </Button>
-        }
-      >
-        <Typography.Text type="secondary">{t("tokens.enrollmentHint")}</Typography.Text>
+            column={{ xs: 1, sm: 2, lg: 3 }}
+            items={[
+              { key: "app", label: t("tokens.app"), children: data.appId },
+              {
+                key: "status",
+                label: t("tokens.status"),
+                children: getStatusLabel(data.status, t),
+              },
+              {
+                key: "createdAt",
+                label: t("logs.createdAt"),
+                children: formatDate(data.createdAt, locale),
+              },
+            ]}
+          />
+        </Card>
+        <Card title={t("tokens.lastUsed")}>
+          <Typography.Text type="secondary">{data.lastUsed}</Typography.Text>
+        </Card>
+        <Card title={t("logs.timelineTitle")}>
+          <ActivityTimeline
+            items={[
+              {
+                label: `${t("logs.createdAt")} • ${formatDate(data.createdAt, locale)}`,
+                time: formatDate(data.createdAt, locale),
+              },
+              {
+                label: `${t("tokens.lastUsed")} • ${data.lastUsed}`,
+                time: formatDateTime(data.lastUsed, locale),
+              },
+            ]}
+          />
+        </Card>
+        <Card
+          title={t("tokens.enrollmentTitle")}
+          extra={
+            <Button
+              type="default"
+              size="small"
+              onClick={() => setIsRevealed(true)}
+              disabled={isRevealed}
+            >
+              {isRevealed ? t("tokens.revealed") : t("tokens.reveal")}
+            </Button>
+          }
+        >
+          <Typography.Text type="secondary">{t("tokens.enrollmentHint")}</Typography.Text>
 
-        {isRevealed ? (
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <Card size="small" className="bg-slate-50">
-              <Typography.Text className="text-slate-800" strong>
-                {t("tokens.qrPlaceholder")}
-              </Typography.Text>
-              <Typography.Paragraph className="mt-2 text-xs text-slate-600">
-                {otpUri}
-              </Typography.Paragraph>
-            </Card>
-            <Card size="small">
-              <Typography.Text className="text-slate-800" strong>
-                {t("tokens.secretLabel")}
-              </Typography.Text>
-              <Typography.Paragraph className="mt-2 font-mono text-sm text-slate-900">
-                {secret}
-              </Typography.Paragraph>
-              <Button
-                type="default"
-                size="small"
-                onClick={() => navigator.clipboard.writeText(secret)}
-              >
-                {t("tokens.copySecret")}
-              </Button>
-            </Card>
-          </div>
-        ) : (
-          <Typography.Text className="mt-4" type="secondary">
-            {t("tokens.secretHidden")}
-          </Typography.Text>
-        )}
-      </Card>
+          {isRevealed ? (
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              <Card size="small" className="bg-slate-50">
+                <Typography.Text className="text-slate-800" strong>
+                  {t("tokens.qrPlaceholder")}
+                </Typography.Text>
+                <Typography.Paragraph className="mt-2 text-xs text-slate-600">
+                  {otpUri}
+                </Typography.Paragraph>
+              </Card>
+              <Card size="small">
+                <Typography.Text className="text-slate-800" strong>
+                  {t("tokens.secretLabel")}
+                </Typography.Text>
+                <Typography.Paragraph className="mt-2 font-mono text-sm text-slate-900">
+                  {secret}
+                </Typography.Paragraph>
+                <Button
+                  type="default"
+                  size="small"
+                  onClick={() => navigator.clipboard.writeText(secret)}
+                >
+                  {t("tokens.copySecret")}
+                </Button>
+              </Card>
+            </div>
+          ) : (
+            <Typography.Text className="mt-4" type="secondary">
+              {t("tokens.secretHidden")}
+            </Typography.Text>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

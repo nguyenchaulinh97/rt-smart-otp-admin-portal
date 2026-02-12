@@ -4,11 +4,12 @@ import { useI18n } from "@/hooks/useI18n";
 import { useRole } from "@/hooks/useRole";
 import { allRoles } from "@/lib/rbac";
 import { Button, Select } from "antd";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function TopBar() {
   const { locale, setLocale, t } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
   const { role, setRole } = useRole();
 
   const handleLogout = () => {
@@ -16,11 +17,20 @@ export default function TopBar() {
     router.replace("/login");
   };
 
+  const section = (() => {
+    if (!pathname || pathname === "/") return "dashboard";
+    const parts = pathname.split("/").filter(Boolean);
+    return parts[0] || "dashboard";
+  })();
+
+  const headerTitle = t(`${section}.title`) || t("app.headerTitle");
+  const headerSubtitle = t(`${section}.subtitle`) || t("app.headerSubtitle");
+
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4">
       <div>
-        <p className="text-sm font-semibold text-slate-900 !mb-0">{t("app.headerTitle")}</p>
-        <p className="text-xs text-slate-500 !mb-0">{t("app.headerSubtitle")}</p>
+        <p className="text-sm font-semibold text-slate-900 mb-0!">{headerTitle}</p>
+        <p className="text-xs text-slate-500 mb-0!">{headerSubtitle}</p>
       </div>
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 text-xs text-slate-500">

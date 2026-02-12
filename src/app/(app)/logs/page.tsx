@@ -84,11 +84,6 @@ export default function LogsPage() {
 
   return (
     <div className="space-y-6 grid gap-6">
-      <header className="rounded-xl border border-slate-200 bg-white p-6 mb-0">
-        <h1 className="text-2xl font-semibold text-slate-900">{t("logs.title")}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t("logs.subtitle")}</p>
-      </header>
-
       <div className="flex flex-wrap items-center justify-between gap-2 mb-0">
         <div className="flex flex-wrap gap-2">
           {["verify", "admin"].map((tab) => (
@@ -181,7 +176,6 @@ export default function LogsPage() {
             isLoading={verifyLoading}
             errorMessage={verifyError ? t("table.error") : undefined}
             onRetry={verifyError ? () => refetchVerify() : undefined}
-            pageSize={5}
           />
         </div>
       ) : (
@@ -247,7 +241,6 @@ export default function LogsPage() {
             isLoading={auditLoading}
             errorMessage={auditError ? t("table.error") : undefined}
             onRetry={auditError ? () => refetchAudit() : undefined}
-            pageSize={5}
           />
         </div>
       )}

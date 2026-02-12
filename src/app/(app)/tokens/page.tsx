@@ -103,11 +103,6 @@ export default function TokensPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-xl border border-slate-200 bg-white p-6">
-        <h1 className="text-2xl font-semibold text-slate-900">{t("tokens.title")}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t("tokens.subtitle")}</p>
-      </header>
-
       <DataTable
         title={t("tokens.tableTitle")}
         description={t("tokens.tableSubtitle")}
@@ -246,7 +241,6 @@ export default function TokensPage() {
               }
             : undefined
         }
-        pageSize={5}
       />
     </div>
   );

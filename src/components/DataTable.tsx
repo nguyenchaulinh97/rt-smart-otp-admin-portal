@@ -3,7 +3,7 @@
 import { useI18n } from "@/hooks/useI18n";
 import { Button, Input, Select, Table, Tooltip } from "antd";
 import type { ColumnsType, SorterResult, SortOrder } from "antd/es/table/interface";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type Column<T> = {
   key: string;
@@ -83,6 +83,22 @@ export default function DataTable<T>({
 }: DataTableProps<T>) {
   const { t } = useI18n();
   const resolvedEmptyState = emptyState ?? t("table.empty");
+  // local page size state so changing showSizeChanger updates the table
+  const [localPageSize, setLocalPageSize] = useState<number>(pageSize);
+  // current page for controlled pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // keep local pageSize in sync if parent prop changes
+  useEffect(() => {
+    setLocalPageSize(pageSize);
+  }, [pageSize]);
+
+  // reset current page when rows or filters change (so config/data changes take effect)
+  const serializedFilterValues = filterValues ? JSON.stringify(filterValues) : "";
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rows, serializedFilterValues, searchValue]);
+
   const [sortState, setSortState] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -286,19 +302,33 @@ export default function DataTable<T>({
           pagination={
             enablePagination
               ? {
-                  pageSize,
-                  showSizeChanger: false,
+                  current: currentPage,
+                  pageSize: localPageSize,
+                  showSizeChanger: true,
+                  pageSizeOptions: [5, 10, 20, 50, 100],
                   showTotal: (total, range) => {
-                    const current = Math.max(1, Math.ceil(range[1] / pageSize));
-                    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+                    const current = Math.max(1, Math.ceil(range[1] / localPageSize));
+                    const totalPages = Math.max(1, Math.ceil(total / localPageSize));
                     return `${t("table.page")} ${current} ${t("table.of")} ${totalPages}`;
+                  },
+                  onChange: (page: number, newPageSize?: number) => {
+                    setCurrentPage(page);
+                    if (typeof newPageSize === "number") setLocalPageSize(newPageSize);
                   },
                 }
               : false
           }
           loading={isLoading}
           scroll={{ x: "max-content" }}
-          onChange={(_pagination, _filters, sorter) => handleSortChange(sorter)}
+          onChange={(pagination, _filters, sorter) => {
+            if (pagination && typeof (pagination as { current?: unknown }).current === "number") {
+              setCurrentPage((pagination as { current?: number }).current ?? 1);
+            }
+            if (pagination && typeof (pagination as { pageSize?: unknown }).pageSize === "number") {
+              setLocalPageSize((pagination as { pageSize?: number }).pageSize ?? localPageSize);
+            }
+            handleSortChange(sorter as SorterResult<T> | SorterResult<T>[]);
+          }}
           locale={{
             emptyText: errorMessage ? (
               <div className="flex flex-col gap-2 text-sm text-rose-600">

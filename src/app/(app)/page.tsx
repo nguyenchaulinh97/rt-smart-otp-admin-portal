@@ -7,11 +7,6 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <h1 className="text-2xl font-semibold text-slate-900">{t("dashboard.title")}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t("dashboard.subtitle")}</p>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
           { label: t("dashboard.activeUsers"), value: "1,248" },

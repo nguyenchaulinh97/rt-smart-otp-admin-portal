@@ -16,7 +16,7 @@ import {
 } from "@/mock/api";
 import { otpService } from "@/services/otpService";
 import { formatDate, formatDateTime, getStatusLabel } from "@/utils/formatters";
-import { Button, Card, Descriptions, List, Typography } from "antd";
+import { Button, Card, Descriptions, Typography } from "antd";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
@@ -154,7 +154,7 @@ export default function UserDetailPage() {
                 key: "lastActivity",
                 label: t("users.lastActivity"),
                 children: data.lastActivity,
-                span: 3,
+                span: 2,
               },
             ]}
           />
@@ -166,19 +166,16 @@ export default function UserDetailPage() {
           {userTokens.length === 0 ? (
             <Typography.Text type="secondary">{t("table.empty")}</Typography.Text>
           ) : (
-            <List
-              dataSource={userTokens}
-              renderItem={(token) => (
-                <List.Item>
-                  <div className="flex w-full items-center justify-between">
-                    <Typography.Text>{token.id}</Typography.Text>
-                    <Typography.Text type="secondary">
-                      {getStatusLabel(token.status, t)}
-                    </Typography.Text>
-                  </div>
-                </List.Item>
-              )}
-            />
+            <div className="space-y-2">
+              {userTokens.map((token) => (
+                <div key={token.id} className="flex w-full items-center justify-between">
+                  <Typography.Text>{token.id}</Typography.Text>
+                  <Typography.Text type="secondary">
+                    {getStatusLabel(token.status, t)}
+                  </Typography.Text>
+                </div>
+              ))}
+            </div>
           )}
         </Card>
       )}
@@ -188,21 +185,18 @@ export default function UserDetailPage() {
           {userDevices.length === 0 ? (
             <Typography.Text type="secondary">{t("table.empty")}</Typography.Text>
           ) : (
-            <List
-              dataSource={userDevices}
-              renderItem={(device) => (
-                <List.Item>
-                  <div className="flex w-full items-center justify-between">
-                    <Typography.Text>
-                      {device.id} • {device.platform}
-                    </Typography.Text>
-                    <Typography.Text type="secondary">
-                      {getStatusLabel(device.status, t)}
-                    </Typography.Text>
-                  </div>
-                </List.Item>
-              )}
-            />
+            <div className="space-y-2">
+              {userDevices.map((device) => (
+                <div key={device.id} className="flex w-full items-center justify-between">
+                  <Typography.Text>
+                    {device.id} • {device.platform}
+                  </Typography.Text>
+                  <Typography.Text type="secondary">
+                    {getStatusLabel(device.status, t)}
+                  </Typography.Text>
+                </div>
+              ))}
+            </div>
           )}
         </Card>
       )}
@@ -214,21 +208,21 @@ export default function UserDetailPage() {
               {userVerifyLogs.length === 0 ? (
                 <Typography.Text type="secondary">{t("table.empty")}</Typography.Text>
               ) : (
-                <List
-                  dataSource={userVerifyLogs}
-                  renderItem={(log) => (
-                    <List.Item>
-                      <div className="flex w-full items-center justify-between">
-                        <Typography.Text>
-                          {getStatusLabel(log.result, t)} • {log.appId}
-                        </Typography.Text>
-                        <Typography.Text type="secondary">
-                          {formatDateTime(log.createdAt, locale)}
-                        </Typography.Text>
-                      </div>
-                    </List.Item>
-                  )}
-                />
+                <div className="space-y-2">
+                  {userVerifyLogs.map((log) => (
+                    <div
+                      key={String(log.createdAt)}
+                      className="flex w-full items-center justify-between"
+                    >
+                      <Typography.Text>
+                        {getStatusLabel(log.result, t)} • {log.appId}
+                      </Typography.Text>
+                      <Typography.Text type="secondary">
+                        {formatDateTime(log.createdAt, locale)}
+                      </Typography.Text>
+                    </div>
+                  ))}
+                </div>
               )}
             </Card>
             <Card size="small" title={t("logs.timelineTitle")}>
