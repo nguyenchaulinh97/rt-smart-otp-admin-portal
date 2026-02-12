@@ -6,7 +6,7 @@ import UiProvider from "@/providers/UiProvider";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen justify-center">
         <AuthGuard>
           <UiProvider>
             <Sidebar />

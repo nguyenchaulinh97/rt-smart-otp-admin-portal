@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/hooks/useI18n";
+import { Spin } from "antd";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useSyncExternalStore } from "react";
 
 const PUBLIC_ROUTES = new Set(["/login"]);
 const AUTH_EVENT = "auth:state-change";
@@ -41,8 +42,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (authState !== true) {
     return (
-      <div className="grid min-h-screen place-items-center bg-slate-50 text-sm text-slate-500">
-        {t("auth.redirecting")}
+      <div
+        className="grid min-h-screen place-items-center bg-slate-50 text-sm text-slate-500"
+        role="status"
+      >
+        <div className="flex flex-col items-center gap-3">
+          <Spin size="large" />
+        </div>
       </div>
     );
   }
