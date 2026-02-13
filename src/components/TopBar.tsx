@@ -2,7 +2,9 @@
 
 import { useI18n } from "@/hooks/useI18n";
 import { useRole } from "@/hooks/useRole";
+import { useTheme } from "@/hooks/useTheme";
 import { allRoles } from "@/lib/rbac";
+import { MoonOutlined, SunOutlined } from "@ant-design/icons";
 import { Button, Select } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -11,6 +13,7 @@ export default function TopBar() {
   const router = useRouter();
   const pathname = usePathname();
   const { role, setRole } = useRole();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     localStorage.removeItem("auth:loggedIn");
@@ -33,6 +36,14 @@ export default function TopBar() {
         <p className="text-xs text-slate-500 mb-0!">{headerSubtitle}</p>
       </div>
       <div className="flex items-center gap-3">
+        <Button
+          type="text"
+          size="small"
+          onClick={toggleTheme}
+          aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+        >
+          {theme === "dark" ? <SunOutlined /> : <MoonOutlined />}
+        </Button>
         <label className="flex items-center gap-2 text-xs text-slate-500">
           {t("language.label")}
           <Select

@@ -2,7 +2,17 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+}
+
+:root[data-theme="dark"] {
+  --background: #0b1220;
+  --foreground: #e2e8f0;
+}
+
+:root[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -25,6 +35,48 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+:root[data-theme="dark"] .bg-white {
+  background-color: #111827 !important;
+}
+
+:root[data-theme="dark"] .bg-white\! {
+  background-color: #111827 !important;
+}
+
+:root[data-theme="dark"] .bg-slate-50 {
+  background-color: #0b1220 !important;
+}
+
+:root[data-theme="dark"] .border-slate-200 {
+  border-color: #1f2937 !important;
+}
+
+:root[data-theme="dark"] .text-slate-900 {
+  color: #e2e8f0 !important;
+}
+
+:root[data-theme="dark"] .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+:root[data-theme="dark"] .text-slate-600,
+:root[data-theme="dark"] .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+:root[data-theme="dark"] .ant-layout-sider,
+:root[data-theme="dark"] .ant-layout-sider .ant-layout-sider-children,
+:root[data-theme="dark"] .ant-menu,
+:root[data-theme="dark"] .ant-menu-sub,
+:root[data-theme="dark"] .ant-menu-item,
+:root[data-theme="dark"] .ant-menu-item-active {
+  background-color: #111827 !important;
+}
+
+:root[data-theme="dark"] .ant-menu-item-selected {
+  background-color: #0f172a !important;
+}
+
 .ant-input,
 .ant-select,
 .ant-input-affix-wrapper,
@@ -35,4 +87,11 @@ body {
 
 .ant-select:not(.ant-select-customize-input) .ant-select-selector {
   align-items: center;
+}
+
+.ant-menu-inline,
+.ant-menu-vertical,
+.ant-menu-light.ant-menu-root.ant-menu-inline,
+.ant-menu-light.ant-menu-root.ant-menu-vertical {
+  border-inline-end: 0 !important;
 }
