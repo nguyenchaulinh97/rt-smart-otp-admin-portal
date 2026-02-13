@@ -1,12 +1,16 @@
 "use client";
 
 import DataTable from "@/components/DataTable";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useI18n } from "@/hooks/useI18n";
 import { useMockQuery } from "@/hooks/useMockQuery";
+import { useRole } from "@/hooks/useRole";
+import { useToast } from "@/hooks/useToast";
+import { canAccess } from "@/lib/rbac";
 import { type DeviceRecord } from "@/mock/api";
 import { otpService } from "@/services/otpService";
 import { getStatusColor, getStatusLabel } from "@/utils/formatters";
-import { Tag } from "antd";
+import { Button, Tag, Tooltip } from "antd";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -14,6 +18,9 @@ type DeviceRow = DeviceRecord;
 
 export default function DevicesPage() {
   const { t } = useI18n();
+  const confirm = useConfirm();
+  const toast = useToast();
+  const { role } = useRole();
   const [isError, setIsError] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -29,6 +36,15 @@ export default function DevicesPage() {
   const rows = data ?? [];
   const resolvedLoading = isFetching;
   const resolvedError = isError ? t("table.error") : error ? t("table.error") : undefined;
+  const handleRowAction = async (message: string) => {
+    const accepted = await confirm({
+      title: t("ui.confirmTitle"),
+      message,
+      confirmLabel: t("ui.confirm"),
+    });
+    if (!accepted) return;
+    toast({ variant: "success", message: t("devices.actionToast") });
+  };
   const filteredRows = rows.filter((row) => {
     const matchesSearch = searchValue
       ? row.id.toLowerCase().includes(searchValue.toLowerCase())
@@ -136,6 +152,43 @@ export default function DevicesPage() {
             header: t("devices.lastSeen"),
             render: (row) => row.lastSeen,
             sortValue: (row) => row.lastSeen,
+          },
+          {
+            key: "actions",
+            header: t("devices.actions"),
+            render: () => (
+              <div className="flex flex-wrap items-center gap-2">
+                <Tooltip
+                  title={!canAccess(role, "devices:block") ? t("ui.permissionDenied") : undefined}
+                >
+                  <span>
+                    <Button
+                      type="default"
+                      size="small"
+                      danger
+                      disabled={!canAccess(role, "devices:block")}
+                      onClick={() => handleRowAction(t("devices.confirmBlock"))}
+                    >
+                      {t("devices.actionBlock")}
+                    </Button>
+                  </span>
+                </Tooltip>
+                <Tooltip
+                  title={!canAccess(role, "devices:unbind") ? t("ui.permissionDenied") : undefined}
+                >
+                  <span>
+                    <Button
+                      type="default"
+                      size="small"
+                      disabled={!canAccess(role, "devices:unbind")}
+                      onClick={() => handleRowAction(t("devices.confirmUnbind"))}
+                    >
+                      {t("devices.actionUnbind")}
+                    </Button>
+                  </span>
+                </Tooltip>
+              </div>
+            ),
           },
         ]}
         rows={filteredRows}

@@ -10,7 +10,7 @@ import { canAccess } from "@/lib/rbac";
 import { type TokenRecord } from "@/mock/api";
 import { otpService } from "@/services/otpService";
 import { getStatusColor, getStatusLabel } from "@/utils/formatters";
-import { Tag } from "antd";
+import { Button, Tag, Tooltip } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -65,6 +65,15 @@ export default function TokensPage() {
       void action;
       void ids;
     };
+  const handleRowAction = async (message: string) => {
+    const accepted = await confirm({
+      title: t("ui.confirmTitle"),
+      message,
+      confirmLabel: t("ui.confirm"),
+    });
+    if (!accepted) return;
+    toast({ variant: "success", message: t("tokens.actionToast") });
+  };
   const resolvedLoading = isLoading || isFetching;
   const resolvedError = isError ? t("table.error") : error ? t("table.error") : undefined;
   const appOptions = useMemo(
@@ -227,6 +236,62 @@ export default function TokensPage() {
             header: t("tokens.lastUsed"),
             render: (row) => row.lastUsed,
             sortValue: (row) => row.lastUsed,
+          },
+          {
+            key: "actions",
+            header: t("tokens.actions"),
+            render: (row) => {
+              const isLocked = row.status === "Locked";
+              const canLock = canAccess(role, "tokens:lock");
+              const canUnlock = canAccess(role, "tokens:unlock");
+              const canReset = canAccess(role, "tokens:reset");
+              const canExport = canAccess(role, "tokens:export");
+              const lockDisabled = isLocked ? !canUnlock : !canLock;
+              return (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Tooltip title={lockDisabled ? t("ui.permissionDenied") : undefined}>
+                    <span>
+                      <Button
+                        type="default"
+                        size="small"
+                        disabled={lockDisabled}
+                        onClick={() =>
+                          handleRowAction(
+                            isLocked ? t("tokens.confirmUnlock") : t("tokens.confirmLock"),
+                          )
+                        }
+                      >
+                        {isLocked ? t("tokens.actionUnlock") : t("tokens.actionLock")}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={!canReset ? t("ui.permissionDenied") : undefined}>
+                    <span>
+                      <Button
+                        type="default"
+                        size="small"
+                        disabled={!canReset}
+                        onClick={() => handleRowAction(t("tokens.confirmReset"))}
+                      >
+                        {t("tokens.actionReset")}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={!canExport ? t("ui.permissionDenied") : undefined}>
+                    <span>
+                      <Button
+                        type="default"
+                        size="small"
+                        disabled={!canExport}
+                        onClick={() => handleRowAction(t("tokens.confirmExport"))}
+                      >
+                        {t("tokens.actionExport")}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                </div>
+              );
+            },
           },
         ]}
         rows={filteredRows}

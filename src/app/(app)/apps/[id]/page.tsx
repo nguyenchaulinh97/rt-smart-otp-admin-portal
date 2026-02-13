@@ -3,14 +3,16 @@
 import ActivityTimeline from "@/components/ActivityTimeline";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LoadingState from "@/components/LoadingState";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useI18n } from "@/hooks/useI18n";
 import { useMockQuery } from "@/hooks/useMockQuery";
 import { useRole } from "@/hooks/useRole";
+import { useToast } from "@/hooks/useToast";
 import { canAccess } from "@/lib/rbac";
-import { type AppRecord, type PolicyRecord } from "@/mock/api";
+import { type AppRecord, type PolicyRecord, type TokenRecord } from "@/mock/api";
 import { otpService } from "@/services/otpService";
 import { formatDate, formatNumber, formatPolicyStep, getStatusLabel } from "@/utils/formatters";
-import { Button, Card, Descriptions, Typography } from "antd";
+import { Button, Card, Descriptions, Tooltip, Typography } from "antd";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -19,15 +21,32 @@ export default function AppDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { t, locale } = useI18n();
+  const confirm = useConfirm();
+  const toast = useToast();
   const { role } = useRole();
   const { data, isLoading, error, refetch } = useMockQuery<AppRecord | null>(() =>
     otpService.getApp(String(id)),
   );
   const { data: policies } = useMockQuery<PolicyRecord[]>(() => otpService.getPolicies());
+  const { data: tokens } = useMockQuery<TokenRecord[]>(() => otpService.getTokens());
   const selectedPolicy = useMemo(
     () => policies?.find((policy) => policy.name === data?.policy),
     [policies, data?.policy],
   );
+  const appTokens = useMemo(
+    () => (tokens ?? []).filter((token) => token.appId === data?.id),
+    [tokens, data?.id],
+  );
+
+  const handleTokenAction = async (message: string) => {
+    const accepted = await confirm({
+      title: t("ui.confirmTitle"),
+      message,
+      confirmLabel: t("ui.confirm"),
+    });
+    if (!accepted) return;
+    toast({ variant: "success", message: t("tokens.actionToast") });
+  };
 
   if (isLoading) {
     return <LoadingState />;
@@ -113,7 +132,16 @@ export default function AppDetailPage() {
           />
         </Card>
 
-        <Card title={t("policies.details")}>
+        <Card
+          title={t("policies.details")}
+          extra={
+            selectedPolicy ? (
+              <Button type="default" onClick={() => router.push(`/policies/${selectedPolicy.id}`)}>
+                {t("policies.view")}
+              </Button>
+            ) : null
+          }
+        >
           <Typography.Text type="secondary">{t("apps.policyEditorHint")}</Typography.Text>
           {selectedPolicy ? (
             <Descriptions
@@ -150,9 +178,74 @@ export default function AppDetailPage() {
               {t("table.empty")}
             </Typography.Text>
           )}
-          <Button type="default" className="mt-4" disabled>
-            {t("policies.save")}
-          </Button>
+        </Card>
+
+        <Card title={t("apps.tokens")}>
+          {appTokens.length === 0 ? (
+            <Typography.Text type="secondary">{t("table.empty")}</Typography.Text>
+          ) : (
+            <div className="space-y-3">
+              {appTokens.map((token) => {
+                const isLocked = token.status === "Locked";
+                const canLock = canAccess(role, "tokens:lock");
+                const canUnlock = canAccess(role, "tokens:unlock");
+                const canReset = canAccess(role, "tokens:reset");
+                const lockDisabled = isLocked ? !canUnlock : !canLock;
+                const lockLabel = isLocked ? t("tokens.actionUnlock") : t("tokens.actionLock");
+                return (
+                  <div
+                    key={token.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-2"
+                  >
+                    <div>
+                      <Link
+                        href={`/tokens/${token.id}`}
+                        className="text-sm font-semibold text-slate-900 hover:text-slate-700"
+                      >
+                        {token.id}
+                      </Link>
+                      <p className="text-xs text-slate-500">
+                        {t("tokens.user")}: {token.userId}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Typography.Text type="secondary">
+                        {getStatusLabel(token.status, t)}
+                      </Typography.Text>
+                      <Tooltip title={lockDisabled ? t("ui.permissionDenied") : undefined}>
+                        <span>
+                          <Button
+                            type="default"
+                            size="small"
+                            disabled={lockDisabled}
+                            onClick={() =>
+                              handleTokenAction(
+                                isLocked ? t("tokens.confirmUnlock") : t("tokens.confirmLock"),
+                              )
+                            }
+                          >
+                            {lockLabel}
+                          </Button>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={!canReset ? t("ui.permissionDenied") : undefined}>
+                        <span>
+                          <Button
+                            type="default"
+                            size="small"
+                            disabled={!canReset}
+                            onClick={() => handleTokenAction(t("tokens.confirmReset"))}
+                          >
+                            {t("tokens.actionReset")}
+                          </Button>
+                        </span>
+                      </Tooltip>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
       </div>
     </div>

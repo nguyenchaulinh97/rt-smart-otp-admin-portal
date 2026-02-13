@@ -1,30 +1,25 @@
 "use client";
 
-import AppForm from "@/components/AppForm";
 import LoadingState from "@/components/LoadingState";
+import PolicyForm from "@/components/PolicyForm";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useI18n } from "@/hooks/useI18n";
 import { useMockQuery } from "@/hooks/useMockQuery";
 import { useRole } from "@/hooks/useRole";
 import { useToast } from "@/hooks/useToast";
 import { canAccess } from "@/lib/rbac";
-import { type AppRecord, type PolicyRecord } from "@/mock/api";
 import { otpService } from "@/services/otpService";
 import { Button } from "antd";
 import { useParams, useRouter } from "next/navigation";
 
-export default function AppEditPage() {
+export default function PolicyEditPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useI18n();
-  const router = useRouter();
   const confirm = useConfirm();
   const toast = useToast();
+  const router = useRouter();
   const { role } = useRole();
-  const { data, isLoading, error, refetch } = useMockQuery<AppRecord | null>(() =>
-    otpService.getApp(String(id)),
-  );
-  const { data: policies } = useMockQuery<PolicyRecord[]>(() => otpService.getPolicies());
-  const policyOptions = (policies ?? []).map((policy) => policy.name);
+  const { data, isLoading, error, refetch } = useMockQuery(() => otpService.getPolicy(String(id)));
 
   if (isLoading) {
     return <LoadingState />;
@@ -45,31 +40,32 @@ export default function AppEditPage() {
     return <div className="text-sm text-slate-500">{t("table.empty")}</div>;
   }
 
-  const isReadOnly = !canAccess(role, "apps:edit");
+  const isReadOnly = !canAccess(role, "policies:edit");
 
   return (
-    <AppForm
-      title={t("apps.editTitle")}
-      disableId
-      isReadOnly={isReadOnly}
-      disabledReason={t("ui.permissionDenied")}
-      policyOptions={policyOptions}
+    <PolicyForm
+      title={t("policies.editTitle")}
       initialValues={{
-        id: data.id,
         name: data.name,
-        policy: data.policy,
+        type: data.type,
+        digits: String(data.digits),
+        stepSeconds: data.stepSeconds ? String(data.stepSeconds) : "",
+        window: data.window ? String(data.window) : "",
+        algorithm: data.algorithm,
         status: data.status,
       }}
-      onCancel={() => router.push(`/apps/${data.id}`)}
+      isReadOnly={isReadOnly}
+      disabledReason={t("ui.permissionDenied")}
+      onCancel={() => router.push(`/policies/${data.id}`)}
       onSubmit={async () => {
         const accepted = await confirm({
           title: t("ui.confirmTitle"),
-          message: t("ui.confirmSave"),
+          message: t("ui.confirmPolicySave"),
           confirmLabel: t("ui.confirm"),
         });
         if (!accepted) return;
         toast({ variant: "success", message: t("ui.toastSaved") });
-        router.push(`/apps/${data.id}`);
+        router.push(`/policies/${data.id}`);
       }}
     />
   );

@@ -3,9 +3,11 @@
 import ActivityTimeline from "@/components/ActivityTimeline";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LoadingState from "@/components/LoadingState";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useI18n } from "@/hooks/useI18n";
 import { useMockQuery } from "@/hooks/useMockQuery";
 import { useRole } from "@/hooks/useRole";
+import { useToast } from "@/hooks/useToast";
 import { canAccess } from "@/lib/rbac";
 import {
   type AuditLogRecord,
@@ -16,7 +18,7 @@ import {
 } from "@/mock/api";
 import { otpService } from "@/services/otpService";
 import { formatDate, formatDateTime, getStatusLabel } from "@/utils/formatters";
-import { Button, Card, Descriptions, Typography } from "antd";
+import { Button, Card, Descriptions, Tooltip, Typography } from "antd";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
@@ -26,6 +28,8 @@ export default function UserDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, locale } = useI18n();
+  const confirm = useConfirm();
+  const toast = useToast();
   const { role } = useRole();
   const tabParam = searchParams.get("tab");
   const activeTab = "profile,tokens,devices,activity".split(",").includes(tabParam ?? "")
@@ -168,11 +172,89 @@ export default function UserDetailPage() {
           ) : (
             <div className="space-y-2">
               {userTokens.map((token) => (
-                <div key={token.id} className="flex w-full items-center justify-between">
-                  <Typography.Text>{token.id}</Typography.Text>
-                  <Typography.Text type="secondary">
-                    {getStatusLabel(token.status, t)}
-                  </Typography.Text>
+                <div
+                  key={token.id}
+                  className="flex w-full flex-wrap items-center justify-between gap-2"
+                >
+                  <div>
+                    <Link
+                      href={`/tokens/${token.id}`}
+                      className="text-sm font-semibold text-slate-900 hover:text-slate-700"
+                    >
+                      {token.id}
+                    </Link>
+                    <p className="text-xs text-slate-500">
+                      {t("tokens.app")}: {token.appId}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Typography.Text type="secondary">
+                      {getStatusLabel(token.status, t)}
+                    </Typography.Text>
+                    <Tooltip
+                      title={
+                        token.status === "Locked"
+                          ? !canAccess(role, "tokens:unlock")
+                            ? t("ui.permissionDenied")
+                            : undefined
+                          : !canAccess(role, "tokens:lock")
+                            ? t("ui.permissionDenied")
+                            : undefined
+                      }
+                    >
+                      <span>
+                        <Button
+                          type="default"
+                          size="small"
+                          disabled={
+                            token.status === "Locked"
+                              ? !canAccess(role, "tokens:unlock")
+                              : !canAccess(role, "tokens:lock")
+                          }
+                          onClick={async () => {
+                            const accepted = await confirm({
+                              title: t("ui.confirmTitle"),
+                              message:
+                                token.status === "Locked"
+                                  ? t("tokens.confirmUnlock")
+                                  : t("tokens.confirmLock"),
+                              confirmLabel: t("ui.confirm"),
+                            });
+                            if (!accepted) return;
+                            toast({ variant: "success", message: t("tokens.actionToast") });
+                          }}
+                        >
+                          {token.status === "Locked"
+                            ? t("tokens.actionUnlock")
+                            : t("tokens.actionLock")}
+                        </Button>
+                      </span>
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        !canAccess(role, "tokens:reset") ? t("ui.permissionDenied") : undefined
+                      }
+                    >
+                      <span>
+                        <Button
+                          type="default"
+                          size="small"
+                          disabled={!canAccess(role, "tokens:reset")}
+                          onClick={async () => {
+                            const accepted = await confirm({
+                              title: t("ui.confirmTitle"),
+                              message: t("tokens.confirmReset"),
+                              confirmLabel: t("ui.confirm"),
+                            });
+                            if (!accepted) return;
+                            toast({ variant: "success", message: t("tokens.actionToast") });
+                          }}
+                        >
+                          {t("tokens.actionReset")}
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  </div>
                 </div>
               ))}
             </div>
@@ -187,13 +269,73 @@ export default function UserDetailPage() {
           ) : (
             <div className="space-y-2">
               {userDevices.map((device) => (
-                <div key={device.id} className="flex w-full items-center justify-between">
-                  <Typography.Text>
-                    {device.id} • {device.platform}
-                  </Typography.Text>
-                  <Typography.Text type="secondary">
-                    {getStatusLabel(device.status, t)}
-                  </Typography.Text>
+                <div
+                  key={device.id}
+                  className="flex w-full flex-wrap items-center justify-between gap-2"
+                >
+                  <div>
+                    <Link
+                      href={`/devices/${device.id}`}
+                      className="text-sm font-semibold text-slate-900 hover:text-slate-700"
+                    >
+                      {device.id}
+                    </Link>
+                    <p className="text-xs text-slate-500">{device.platform}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Typography.Text type="secondary">
+                      {getStatusLabel(device.status, t)}
+                    </Typography.Text>
+                    <Tooltip
+                      title={
+                        !canAccess(role, "devices:block") ? t("ui.permissionDenied") : undefined
+                      }
+                    >
+                      <span>
+                        <Button
+                          type="default"
+                          size="small"
+                          danger
+                          disabled={!canAccess(role, "devices:block")}
+                          onClick={async () => {
+                            const accepted = await confirm({
+                              title: t("ui.confirmTitle"),
+                              message: t("devices.confirmBlock"),
+                              confirmLabel: t("ui.confirm"),
+                            });
+                            if (!accepted) return;
+                            toast({ variant: "success", message: t("devices.actionToast") });
+                          }}
+                        >
+                          {t("devices.actionBlock")}
+                        </Button>
+                      </span>
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        !canAccess(role, "devices:unbind") ? t("ui.permissionDenied") : undefined
+                      }
+                    >
+                      <span>
+                        <Button
+                          type="default"
+                          size="small"
+                          disabled={!canAccess(role, "devices:unbind")}
+                          onClick={async () => {
+                            const accepted = await confirm({
+                              title: t("ui.confirmTitle"),
+                              message: t("devices.confirmUnbind"),
+                              confirmLabel: t("ui.confirm"),
+                            });
+                            if (!accepted) return;
+                            toast({ variant: "success", message: t("devices.actionToast") });
+                          }}
+                        >
+                          {t("devices.actionUnbind")}
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  </div>
                 </div>
               ))}
             </div>

@@ -6,6 +6,7 @@ import { useMockQuery } from "@/hooks/useMockQuery";
 import { otpService } from "@/services/otpService";
 import { formatDateTime, getStatusColor, getStatusLabel } from "@/utils/formatters";
 import { Tag } from "antd";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 type TransactionRow = Awaited<ReturnType<typeof otpService.getTransactions>>[number];
@@ -106,7 +107,14 @@ export default function TransactionsPage() {
           {
             key: "transactionId",
             header: t("transactions.transaction"),
-            render: (row) => row.id,
+            render: (row) => (
+              <Link
+                href={`/transactions/${row.id}`}
+                className="font-medium text-slate-900 hover:text-slate-700"
+              >
+                {row.id}
+              </Link>
+            ),
             sortValue: (row) => row.id,
             className: "font-medium text-slate-900",
           },

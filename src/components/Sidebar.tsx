@@ -3,10 +3,14 @@
 import { useI18n } from "@/hooks/useI18n";
 import {
   AppstoreOutlined,
+  AuditOutlined,
   DashboardOutlined,
   FileTextOutlined,
+  HeartOutlined,
   MobileOutlined,
   QrcodeOutlined,
+  SafetyCertificateOutlined,
+  SafetyOutlined,
   SwapOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -48,6 +52,11 @@ export default function Sidebar() {
     { label: t("nav.tokens"), href: "/tokens", icon: <QrcodeOutlined /> },
     { label: t("nav.transactions"), href: "/transactions", icon: <SwapOutlined /> },
     { label: t("nav.devices"), href: "/devices", icon: <MobileOutlined /> },
+    { label: t("nav.policies"), href: "/policies", icon: <SafetyOutlined /> },
+    { label: t("nav.verifications"), href: "/verifications", icon: <SafetyCertificateOutlined /> },
+    { label: t("nav.health"), href: "/health", icon: <HeartOutlined /> },
+    { label: t("nav.risk"), href: "/risk", icon: <AuditOutlined /> },
+    { label: t("nav.auditAdvanced"), href: "/audit-advanced", icon: <AuditOutlined /> },
     { label: t("nav.logs"), href: "/logs", icon: <FileTextOutlined /> },
   ];
 

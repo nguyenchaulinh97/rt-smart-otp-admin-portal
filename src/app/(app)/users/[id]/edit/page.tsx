@@ -5,7 +5,9 @@ import UserForm from "@/components/UserForm";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useI18n } from "@/hooks/useI18n";
 import { useMockQuery } from "@/hooks/useMockQuery";
+import { useRole } from "@/hooks/useRole";
 import { useToast } from "@/hooks/useToast";
+import { canAccess } from "@/lib/rbac";
 import { type UserRecord } from "@/mock/api";
 import { otpService } from "@/services/otpService";
 import { Button } from "antd";
@@ -17,6 +19,7 @@ export default function UserEditPage() {
   const router = useRouter();
   const confirm = useConfirm();
   const toast = useToast();
+  const { role } = useRole();
   const { data, isLoading, error, refetch } = useMockQuery<UserRecord | null>(() =>
     otpService.getUser(String(id)),
   );
@@ -40,10 +43,14 @@ export default function UserEditPage() {
     return <div className="text-sm text-slate-500">{t("table.empty")}</div>;
   }
 
+  const isReadOnly = !canAccess(role, "users:edit");
+
   return (
     <UserForm
       title={t("users.editTitle")}
       disableId
+      isReadOnly={isReadOnly}
+      disabledReason={t("ui.permissionDenied")}
       initialValues={{
         id: data.id,
         name: data.name,

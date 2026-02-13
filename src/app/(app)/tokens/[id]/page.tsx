@@ -3,12 +3,16 @@
 import ActivityTimeline from "@/components/ActivityTimeline";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LoadingState from "@/components/LoadingState";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useI18n } from "@/hooks/useI18n";
 import { useMockQuery } from "@/hooks/useMockQuery";
-import { type TokenRecord } from "@/mock/api";
+import { useRole } from "@/hooks/useRole";
+import { useToast } from "@/hooks/useToast";
+import { canAccess } from "@/lib/rbac";
+import { type TokenRecord, type VerifyLogRecord } from "@/mock/api";
 import { otpService } from "@/services/otpService";
 import { formatDate, formatDateTime, getStatusLabel } from "@/utils/formatters";
-import { Button, Card, Descriptions, Typography } from "antd";
+import { Button, Card, Descriptions, Tooltip, Typography } from "antd";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -17,9 +21,13 @@ export default function TokenDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, locale } = useI18n();
   const [isRevealed, setIsRevealed] = useState(false);
+  const confirm = useConfirm();
+  const toast = useToast();
+  const { role } = useRole();
   const { data, isLoading, error, refetch } = useMockQuery<TokenRecord | null>(() =>
     otpService.getToken(String(id)),
   );
+  const { data: verifyData } = useMockQuery<VerifyLogRecord[]>(() => otpService.getVerifyLogs());
 
   if (isLoading) {
     return <LoadingState />;
@@ -42,6 +50,31 @@ export default function TokenDetailPage() {
 
   const secret = `SECRET-${data.id.toUpperCase()}`;
   const otpUri = `otpauth://totp/${data.userId}?secret=${secret}&issuer=SmartOTP`;
+  const usageLogs = (verifyData ?? []).filter((log) => log.tokenId === data.id);
+  const canLock = canAccess(role, "tokens:lock");
+  const canUnlock = canAccess(role, "tokens:unlock");
+  const canReset = canAccess(role, "tokens:reset");
+  const canExport = canAccess(role, "tokens:export");
+
+  const handleAction = async (actionKey: string, message: string) => {
+    const accepted = await confirm({
+      title: t("ui.confirmTitle"),
+      message,
+      confirmLabel: t("ui.confirm"),
+    });
+    if (!accepted) return;
+    toast({ variant: "success", message: t("tokens.actionToast") });
+    void actionKey;
+  };
+
+  const lockLabel = data.status === "Locked" ? t("tokens.actionUnlock") : t("tokens.actionLock");
+  const lockHandler = () =>
+    handleAction(
+      data.status === "Locked" ? "unlock" : "lock",
+      data.status === "Locked" ? t("tokens.confirmUnlock") : t("tokens.confirmLock"),
+    );
+  const lockDisabled = data.status === "Locked" ? !canUnlock : !canLock;
+  const lockDisabledReason = lockDisabled ? t("ui.permissionDenied") : undefined;
 
   return (
     <div className="space-y-6">
@@ -55,9 +88,45 @@ export default function TokenDetailPage() {
             {t("tokens.user")}: {data.userId}
           </p>
         </div>
-        <Link href="/tokens" className="text-xs font-semibold text-slate-700 hover:text-slate-900">
-          ← {t("breadcrumbs.tokens")}
-        </Link>
+        <div className="flex items-center gap-3">
+          <Tooltip title={lockDisabledReason}>
+            <span>
+              <Button type="default" size="small" disabled={lockDisabled} onClick={lockHandler}>
+                {lockLabel}
+              </Button>
+            </span>
+          </Tooltip>
+          <Tooltip title={!canReset ? t("ui.permissionDenied") : undefined}>
+            <span>
+              <Button
+                type="default"
+                size="small"
+                disabled={!canReset}
+                onClick={() => handleAction("reset", t("tokens.confirmReset"))}
+              >
+                {t("tokens.actionReset")}
+              </Button>
+            </span>
+          </Tooltip>
+          <Tooltip title={!canExport ? t("ui.permissionDenied") : undefined}>
+            <span>
+              <Button
+                type="default"
+                size="small"
+                disabled={!canExport}
+                onClick={() => handleAction("export", t("tokens.confirmExport"))}
+              >
+                {t("tokens.actionExport")}
+              </Button>
+            </span>
+          </Tooltip>
+          <Link
+            href="/tokens"
+            className="text-xs font-semibold text-slate-700 hover:text-slate-900"
+          >
+            ← {t("breadcrumbs.tokens")}
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -96,6 +165,24 @@ export default function TokenDetailPage() {
               },
             ]}
           />
+        </Card>
+        <Card title={t("tokens.historyTitle")}>
+          {usageLogs.length === 0 ? (
+            <Typography.Text type="secondary">{t("tokens.historyEmpty")}</Typography.Text>
+          ) : (
+            <div className="space-y-2">
+              {usageLogs.map((log) => (
+                <div key={log.id} className="flex w-full items-center justify-between">
+                  <Typography.Text>
+                    {getStatusLabel(log.result, t)} • {log.appId}
+                  </Typography.Text>
+                  <Typography.Text type="secondary">
+                    {formatDateTime(log.createdAt, locale)}
+                  </Typography.Text>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
         <Card
           title={t("tokens.enrollmentTitle")}
