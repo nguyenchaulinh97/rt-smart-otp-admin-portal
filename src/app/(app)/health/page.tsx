@@ -1,6 +1,7 @@
 "use client";
 
 import { useConfirm } from "@/hooks/useConfirm";
+import { useHealth } from "@/hooks/useHealth";
 import { useI18n } from "@/hooks/useI18n";
 import { useToast } from "@/hooks/useToast";
 import { Button, Card } from "antd";
@@ -10,6 +11,8 @@ export default function HealthPage() {
   const confirm = useConfirm();
   const toast = useToast();
 
+  const { data, isLoading, error, triggerSync, isSyncing } = useHealth();
+
   const handleSync = async () => {
     const accepted = await confirm({
       title: t("ui.confirmTitle"),
@@ -17,8 +20,16 @@ export default function HealthPage() {
       confirmLabel: t("ui.confirm"),
     });
     if (!accepted) return;
-    toast({ variant: "success", message: t("health.toastSync") });
+    try {
+      await triggerSync();
+      toast({ variant: "success", message: t("health.toastSync") });
+    } catch {
+      toast({ variant: "error", message: t("table.error") });
+    }
   };
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.toString()}</div>;
 
   return (
     <div className="space-y-6">
@@ -27,7 +38,7 @@ export default function HealthPage() {
           <h1 className="text-2xl font-semibold text-slate-900">{t("health.title")}</h1>
           <p className="text-sm text-slate-500">{t("health.subtitle")}</p>
         </div>
-        <Button type="primary" onClick={handleSync}>
+        <Button type="primary" onClick={handleSync} loading={isSyncing}>
           {t("health.sync")}
         </Button>
       </div>
@@ -75,6 +86,13 @@ export default function HealthPage() {
             </div>
           </div>
         </Card>
+      </div>
+
+      <div className="max-w-lg mx-auto mt-8 p-6 rounded-xl border bg-white shadow">
+        <h2 className="text-xl font-bold mb-4">Service Health</h2>
+        <pre className="bg-slate-100 p-4 rounded text-xs overflow-x-auto">
+          {JSON.stringify(data, null, 2)}
+        </pre>
       </div>
     </div>
   );

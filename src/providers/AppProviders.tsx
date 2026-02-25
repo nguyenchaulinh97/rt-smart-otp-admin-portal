@@ -3,6 +3,9 @@
 import { useTheme } from "@/hooks/useTheme";
 import LanguageProvider from "@/providers/LanguageProvider";
 import ThemeProvider from "@/providers/ThemeProvider";
+import UiProvider from "@/providers/UiProvider";
+import { queryClient } from "@/services/api";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ConfigProvider, theme as antdTheme } from "antd";
 
 const SSI_PRIMARY = "#E35561";
@@ -38,7 +41,9 @@ const ThemedConfigProvider = ({ children }: { children: React.ReactNode }) => {
         components: {},
       }}
     >
-      <LanguageProvider>{children}</LanguageProvider>
+      <LanguageProvider>
+        <UiProvider>{children}</UiProvider>
+      </LanguageProvider>
     </ConfigProvider>
   );
 };
@@ -46,7 +51,9 @@ const ThemedConfigProvider = ({ children }: { children: React.ReactNode }) => {
 export default function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <ThemedConfigProvider>{children}</ThemedConfigProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemedConfigProvider>{children}</ThemedConfigProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

@@ -29,6 +29,7 @@
   "login": {
     "title": "Đăng nhập",
     "subtitle": "Bảng điều khiển Retails Tech Smart OTP",
+    "username": "Tên đăng nhập",
     "email": "Email",
     "password": "Mật khẩu",
     "remember": "Ghi nhớ",
@@ -372,6 +373,7 @@
   },
   "placeholders": {
     "userId": "u_10234",
+    "username": "admin",
     "appId": "fintech",
     "group": "Retail",
     "status": "Hoạt động",

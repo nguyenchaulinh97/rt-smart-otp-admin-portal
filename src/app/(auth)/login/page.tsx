@@ -1,6 +1,8 @@
 "use client";
 
+import { useLogin } from "@/hooks/useAuth";
 import { useI18n } from "@/hooks/useI18n";
+import { useToast } from "@/hooks/useToast";
 import { Button, Checkbox, Form, Input } from "antd";
 import { useRouter } from "next/navigation";
 
@@ -10,18 +12,30 @@ export default function LoginPage() {
 
   const [form] = Form.useForm();
 
-  const handleLogin = (values: { email: string; password: string; remember?: boolean }) => {
-    const { email, password } = values;
-    if (!email || !password) return; // validation enforced by Form rules but keep guard
-    // simple auth mock: accept any non-empty values
-    localStorage.setItem("auth:loggedIn", "true");
-    // optionally trigger storage event for sync
+  const { login, isPending } = useLogin();
+  const toast = useToast();
+
+  const handleLogin = async (values: {
+    username: string;
+    password: string;
+    remember?: boolean;
+  }) => {
+    // DEV: bypass real API login for now — set a mock token and navigate in
     try {
-      window.dispatchEvent(new Event("auth:state-change"));
-    } catch {
-      // ignore
+      // await login(values.username, values.password);
+      // store a temporary token and mark loggedIn so AuthGuard recognizes auth
+      try {
+        localStorage.setItem("auth:token", "dev-bypass-token");
+        localStorage.setItem("auth:loggedIn", "true");
+        // notify other windows/listeners
+        window.dispatchEvent(new Event("auth:state-change"));
+        window.dispatchEvent(new Event("storage"));
+      } catch {}
+      router.replace("/");
+    } catch (err: any) {
+      // fallback in case navigation fails
+      toast({ message: err?.message || "Login failed", variant: "error" });
     }
-    router.replace("/");
   };
 
   return (
@@ -37,11 +51,11 @@ export default function LoginPage() {
 
         <Form form={form} layout="vertical" onFinish={handleLogin} className="space-y-4">
           <Form.Item
-            label={t("login.email")}
-            name="email"
+            label={t("login.username")}
+            name="username"
             rules={[{ required: true, message: t("forms.required") }]}
           >
-            <Input type="email" placeholder="admin@company.com" />
+            <Input type="text" placeholder={t("placeholders.username")} />
           </Form.Item>
 
           <Form.Item
@@ -62,7 +76,7 @@ export default function LoginPage() {
           </div>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" className="w-full">
+            <Button type="primary" htmlType="submit" className="w-full" loading={isPending}>
               {t("login.button")}
             </Button>
           </Form.Item>

@@ -28,6 +28,7 @@
   "login": {
     "title": "Sign in",
     "subtitle": "Retails Tech Smart OTP Console",
+    "username": "Username",
     "email": "Email",
     "password": "Password",
     "remember": "Remember me",
@@ -371,6 +372,7 @@
   },
   "placeholders": {
     "userId": "u_10234",
+    "username": "admin",
     "appId": "fintech",
     "group": "Retail",
     "status": "Active",
