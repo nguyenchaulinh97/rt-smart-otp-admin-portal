@@ -35,6 +35,14 @@
     "forgot": "Forgot password?",
     "button": "Sign in"
   },
+  "profile": {
+    "title": "Admin Profile",
+    "subtitle": "Review account identity and refresh latest profile data.",
+    "username": "Username",
+    "adminId": "Admin ID",
+    "refresh": "Refresh",
+    "error": "Failed to load profile"
+  },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Monitor Retails Tech Smart OTP enrollment, verification health, and token status in one place.",

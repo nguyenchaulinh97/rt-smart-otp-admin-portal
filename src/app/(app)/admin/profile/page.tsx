@@ -1,33 +1,55 @@
 "use client";
 
+import LoadingState from "@/components/LoadingState";
+import { useI18n } from "@/hooks/useI18n";
 import { useProfile } from "@/hooks/useProfile";
+import { Button, Card, Descriptions } from "antd";
 
 export default function AdminProfilePage() {
+  const { t } = useI18n();
   const { data, isLoading, error, refetch } = useProfile();
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.toString()}</div>;
+  if (isLoading) return <LoadingState rows={2} />;
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+        <p>{t("profile.error")}</p>
+        <p className="mt-1">{String(error)}</p>
+        <Button className="mt-3" size="small" danger onClick={() => refetch()}>
+          {t("table.retry")}
+        </Button>
+      </div>
+    );
+  }
+
+  const username = String(data?.username ?? data?.user ?? "-");
+  const adminId = String(data?.admin_id ?? data?.id ?? "-");
 
   return (
-    <div className="max-w-lg mx-auto mt-8 p-6 rounded-xl border bg-white shadow">
-      <h2 className="text-xl font-bold mb-4">Admin Profile</h2>
-      {data ? (
-        <div>
-          <p className="text-sm">
-            Username: {String((data as any).username ?? (data as any).user)}
-          </p>
-          <p className="text-sm">
-            Admin ID: {String((data as any).admin_id ?? (data as any).id ?? "-")}
-          </p>
-          <button onClick={() => refetch()} className="mt-2 text-sm text-sky-600">
-            Refresh
-          </button>
-        </div>
-      ) : (
-        <pre className="bg-slate-100 p-4 rounded text-xs overflow-x-auto">
-          {JSON.stringify(data, null, 2)}
-        </pre>
-      )}
+    <div className="space-y-4">
+      <Card
+        title={t("profile.title")}
+        extra={
+          <Button size="small" onClick={() => refetch()}>
+            {t("profile.refresh")}
+          </Button>
+        }
+      >
+        <p className="mb-4 text-sm text-slate-500">{t("profile.subtitle")}</p>
+        {data ? (
+          <Descriptions
+            size="small"
+            column={1}
+            items={[
+              { key: "username", label: t("profile.username"), children: username },
+              { key: "adminId", label: t("profile.adminId"), children: adminId },
+            ]}
+          />
+        ) : (
+          <p className="text-sm text-slate-500">{t("table.empty")}</p>
+        )}
+      </Card>
     </div>
   );
 }
