@@ -36,6 +36,14 @@
     "forgot": "Quên mật khẩu?",
     "button": "Đăng nhập"
   },
+  "profile": {
+    "title": "Hồ sơ Admin",
+    "subtitle": "Xem thông tin tài khoản và làm mới dữ liệu hồ sơ mới nhất.",
+    "username": "Tên đăng nhập",
+    "adminId": "Mã Admin",
+    "refresh": "Làm mới",
+    "error": "Không thể tải hồ sơ"
+  },
   "dashboard": {
     "title": "Tổng quan",
     "subtitle": "Theo dõi kích hoạt Retails Tech Smart OTP, trạng thái xác thực và token.",

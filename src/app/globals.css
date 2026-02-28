@@ -95,3 +95,49 @@ body {
 .ant-menu-light.ant-menu-root.ant-menu-vertical {
   border-inline-end: 0 !important;
 }
+
+/* App-specific Drawer used for mobile sidebar: hide header and remove body padding */
+.app-sidebar-drawer .ant-drawer-header {
+  display: none;
+}
+.app-sidebar-drawer .ant-drawer-body {
+  padding: 0 !important;
+}
+/* ensure Drawer background matches app */
+.app-sidebar-drawer .ant-drawer-content {
+  background: var(--color-background, #ffffff);
+}
+
+/* Ensure flex children can shrink and avoid horizontal overflow */
+.min-w-0 {
+  min-width: 0;
+}
+
+/* Root-level drawer adjustments for mobile sidebar width */
+.app-sidebar-drawer-root .ant-drawer-content-wrapper {
+  max-width: 280px !important;
+}
+.app-sidebar-drawer-root .ant-drawer-content {
+  background: var(--color-background, #ffffff);
+}
+
+/* Make tables and wide elements responsive */
+.responsive-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  max-width: 100%;
+}
+/* specifically target ant table wrapper */
+.ant-table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+}
+/* ensure code/pre blocks don't force horizontal scroll */
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+}

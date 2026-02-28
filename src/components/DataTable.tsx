@@ -315,6 +315,8 @@ export default function DataTable<T>({
                     setCurrentPage(page);
                     if (typeof newPageSize === "number") setLocalPageSize(newPageSize);
                   },
+                  // ensure pagination isn't flush against the right edge
+                  style: { paddingRight: 12, margin: "12px 0" },
                 }
               : false
           }

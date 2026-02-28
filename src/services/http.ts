@@ -1,37 +1,34 @@
 import { API_BASE } from "./endpoints";
 
-export type RequestOptions = {
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  body?: unknown;
-  headers?: Record<string, string>;
-};
+const hasAbsoluteUrl = (path: string) => /^https?:\/\//i.test(path);
 
 function buildUrl(path: string) {
-  if (/^https?:\/\//i.test(path)) return path;
+  if (hasAbsoluteUrl(path)) return path;
+  // `endpoints.*()` already prepends API_BASE, avoid doubling it.
+  if (API_BASE && path.startsWith(API_BASE)) return path;
   return `${API_BASE}${path}`;
 }
 
-export const request = async <T>(path: string, options?: RequestOptions): Promise<T> => {
+export const request = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
   const url = buildUrl(path);
-  const headers: Record<string, string> = {
+  const headers = {
     "Content-Type": "application/json",
-    ...(options?.headers ?? {}),
-  };
+    ...(options.headers || {}),
+  } as Record<string, string>;
 
-  if (typeof window !== "undefined") {
+  if (!headers.Authorization && typeof window !== "undefined") {
     const token = localStorage.getItem("auth:token");
-    if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`;
+    if (token) headers.Authorization = `Bearer ${token}`;
   }
 
   const response = await fetch(url, {
-    method: options?.method ?? "GET",
+    ...options,
     headers,
-    body: options?.body ? JSON.stringify(options.body) : undefined,
     credentials: "include",
   });
 
   const text = await response.text();
-  let data: any = null;
+  let data: unknown = null;
   try {
     data = text ? JSON.parse(text) : null;
   } catch {
@@ -39,11 +36,18 @@ export const request = async <T>(path: string, options?: RequestOptions): Promis
   }
 
   if (!response.ok) {
+    const messageFromBody =
+      data && typeof data === "object"
+        ? (data as { message?: unknown; error?: unknown }).message ??
+          (data as { message?: unknown; error?: unknown }).error
+        : undefined;
     const err = new Error(
-      (data && (data.message || data.error)) ?? `Request failed: ${response.status}`,
+      typeof messageFromBody === "string" && messageFromBody.trim()
+        ? messageFromBody
+        : `Request failed: ${response.status}`,
     );
-    (err as any).status = response.status;
-    (err as any).data = data;
+    (err as Error & { status?: number; data?: unknown }).status = response.status;
+    (err as Error & { status?: number; data?: unknown }).data = data;
     throw err;
   }
 
