@@ -20,6 +20,13 @@ export default function TopBar({
 
   const handleLogout = () => {
     localStorage.removeItem("auth:loggedIn");
+    localStorage.removeItem("auth:token");
+    try {
+      window.dispatchEvent(new Event("auth:state-change"));
+      window.dispatchEvent(new Event("storage"));
+    } catch {
+      // ignore
+    }
     router.replace("/login");
   };
 
