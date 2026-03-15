@@ -20,17 +20,15 @@ export default function LoginPage() {
     password: string;
     remember?: boolean;
   }) => {
-    // DEV: bypass real API login for now — set a mock token and navigate in
     try {
-      // await login(values.username, values.password);
-      // store a temporary token and mark loggedIn so AuthGuard recognizes auth
+      await login(values.username, values.password);
       try {
-        localStorage.setItem("auth:token", "dev-bypass-token");
         localStorage.setItem("auth:loggedIn", "true");
-        // notify other windows/listeners
         window.dispatchEvent(new Event("auth:state-change"));
         window.dispatchEvent(new Event("storage"));
-      } catch {}
+      } catch {
+        // ignore
+      }
       router.replace("/");
     } catch (err: any) {
       // fallback in case navigation fails
