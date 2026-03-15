@@ -42,9 +42,11 @@ deploy:
   script:
     - docker pull $CI_REGISTRY_IMAGE:latest
     - docker tag $CI_REGISTRY_IMAGE:latest $SERVICE_NAME:latest
+    - echo "Copying .env.production to home directory..."
+    - scp .env.production $DEPLOY_USER@$DEPLOY_HOST:~/$SERVICE_NAME.env
     - echo "DEPLOY_USER=$DEPLOY_USER"
     - echo "DEPLOY_HOST=$DEPLOY_HOST"
     - docker save $SERVICE_NAME:latest | ssh $DEPLOY_USER@$DEPLOY_HOST docker load
-    - ssh $DEPLOY_USER@$DEPLOY_HOST "bash /var/hackathon/toggle.sh $SERVICE_NAME 3000"
+    - ssh $DEPLOY_USER@$DEPLOY_HOST "bash /var/hackathon/toggle.sh $SERVICE_NAME 3000 ~/$SERVICE_NAME.env"
   only:
     - master
