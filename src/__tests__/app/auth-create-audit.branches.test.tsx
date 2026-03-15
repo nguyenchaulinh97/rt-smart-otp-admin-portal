@@ -184,6 +184,10 @@ describe("auth/login branches", () => {
     (useRouter as jest.Mock).mockReturnValue({ push: routerPush, replace: routerReplace });
     (useConfirm as jest.Mock).mockReturnValue(confirmMock);
     (useToast as jest.Mock).mockReturnValue(toastMock);
+    loginMock.mockImplementation(async () => {
+      localStorage.setItem("auth:token", "test-token");
+      return { token: "test-token", username: "admin", admin_id: 1 };
+    });
     (useLogin as jest.Mock).mockReturnValue({ login: loginMock, isPending: false });
   });
 
@@ -194,7 +198,7 @@ describe("auth/login branches", () => {
     fireEvent.click(screen.getByRole("button", { name: "login.button" }));
 
     await waitFor(() => expect(routerReplace).toHaveBeenCalledWith("/"));
-    expect(localStorage.getItem("auth:token")).toBe("dev-bypass-token");
+    expect(localStorage.getItem("auth:token")).toBe("test-token");
     expect(localStorage.getItem("auth:loggedIn")).toBe("true");
     expect(dispatchSpy).toHaveBeenCalled();
   });

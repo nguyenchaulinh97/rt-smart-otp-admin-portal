@@ -29,6 +29,8 @@ type SidebarProps = {
 
 const defaultItems = (t: (k: string) => string) => [
   { label: t("nav.dashboard"), href: "/", icon: <DashboardOutlined /> },
+  { label: t("nav.admins"), href: "/admins", icon: <UserOutlined /> },
+  { label: t("nav.applications"), href: "/applications", icon: <AppstoreOutlined /> },
   { label: t("nav.users"), href: "/users", icon: <UserOutlined /> },
   { label: t("nav.apps"), href: "/apps", icon: <AppstoreOutlined /> },
   { label: t("nav.tokens"), href: "/tokens", icon: <QrcodeOutlined /> },
