@@ -5,7 +5,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 jest.mock("@/services/api", () => ({
   useApiMutation: () => ({
     mutateAsync: async () => ({
-      token: "fake-token",
+      access_token: "fake-token",
       username: "user",
       admin_id: 1,
     }),

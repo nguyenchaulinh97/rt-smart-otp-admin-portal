@@ -373,9 +373,9 @@
   "logs": {
     "title": "Nhật ký & Kiểm toán",
     "subtitle": "Theo dõi xác thực OTP và hành động quản trị.",
-    "verifyTab": "Nhật ký xác thực OTP",
+    "verifyTab": "Sự kiện token",
     "adminTab": "Hành động quản trị",
-    "verifyTableTitle": "Nhật ký xác thực OTP",
+    "verifyTableTitle": "Nhật ký sự kiện token",
     "adminTableTitle": "Nhật ký kiểm toán",
     "user": "Người dùng",
     "app": "Ứng dụng",

@@ -68,6 +68,7 @@ describe("otpService", () => {
       policy: (id: string) => `/policies/${id}`,
       auditLogs: () => "/logs/audit",
       verifyLogs: () => "/logs/verify",
+      tokenEvents: () => "/token-events?limit=200",
       transactions: () => "/transactions",
       devices: () => "/devices",
       device: (id: string) => `/devices/${id}`,
@@ -84,7 +85,9 @@ describe("otpService", () => {
         "/policies": [{ id: "p1" }],
         "/policies/p1": { id: "p1" },
         "/logs/audit": [{ id: "l1" }],
-        "/logs/verify": [{ id: "v1" }],
+        "/token-events?limit=200": [
+          { id: "v1", user_id: "u1", app_id: "a1", token_id: "t1", status: "SUCCESS" },
+        ],
         "/transactions": [{ id: "tr1" }],
         "/devices": [{ id: "d1" }],
         "/devices/d1": { id: "d1" },
@@ -120,12 +123,27 @@ describe("otpService", () => {
     await expect(otpService.getUser("missing")).resolves.toBeNull();
     await expect(otpService.getApps()).resolves.toEqual([{ id: "a1" }]);
     await expect(otpService.getApp("a1")).resolves.toEqual({ id: "a1" });
-    await expect(otpService.getTokens()).resolves.toEqual([{ id: "t1", userId: "u1", appId: "a1" }]);
-    await expect(otpService.getToken("t1")).resolves.toEqual({ id: "t1", userId: "u1", appId: "a1" });
+    await expect(otpService.getTokens()).resolves.toEqual([
+      { id: "t1", userId: "u1", appId: "a1" },
+    ]);
+    await expect(otpService.getToken("t1")).resolves.toEqual({
+      id: "t1",
+      userId: "u1",
+      appId: "a1",
+    });
     await expect(otpService.getPolicies()).resolves.toEqual([{ id: "p1" }]);
     await expect(otpService.getPolicy("p1")).resolves.toEqual({ id: "p1" });
     await expect(otpService.getAuditLogs()).resolves.toEqual([{ id: "l1" }]);
-    await expect(otpService.getVerifyLogs()).resolves.toEqual([{ id: "v1" }]);
+    await expect(otpService.getVerifyLogs()).resolves.toEqual([
+      {
+        id: "v1",
+        userId: "u1",
+        appId: "a1",
+        tokenId: "t1",
+        result: "SUCCESS",
+        createdAt: "",
+      },
+    ]);
     await expect(otpService.getTransactions()).resolves.toEqual([{ id: "tr1" }]);
     await expect(otpService.getDevices()).resolves.toEqual([{ id: "d1" }]);
     await expect(otpService.getDevice("d1")).resolves.toEqual({ id: "d1" });

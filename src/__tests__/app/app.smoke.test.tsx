@@ -106,6 +106,7 @@ jest.mock("antd", () => {
     <div data-testid="antd-table">{dataSource.length}</div>
   );
   const Drawer = ({ children, open }: any) => (open ? <aside>{children}</aside> : null);
+  const Modal = ({ children }: any) => <section>{children}</section>;
   const Menu = ({ items = [], onClick }: any) => (
     <div>
       {items.map((item: any) => (
@@ -168,6 +169,7 @@ jest.mock("antd", () => {
     Breadcrumb,
     Table,
     Drawer,
+    Modal,
     Menu,
     Skeleton,
     Spin,

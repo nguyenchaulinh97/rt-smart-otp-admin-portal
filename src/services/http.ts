@@ -9,6 +9,13 @@ function buildUrl(path: string) {
   return `${API_BASE}${path}`;
 }
 
+export const normalizeToken = (value: string | null) => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "undefined" || trimmed === "null") return null;
+  return trimmed;
+};
+
 export const request = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
   const url = buildUrl(path);
   const headers = {
@@ -17,8 +24,17 @@ export const request = async <T>(path: string, options: RequestInit = {}): Promi
   } as Record<string, string>;
 
   if (!headers.Authorization && typeof window !== "undefined") {
-    const token = localStorage.getItem("auth:token");
-    if (token) headers.Authorization = `Bearer ${token}`;
+    const raw = localStorage.getItem("auth:token");
+    const token = normalizeToken(raw);
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    } else if (raw) {
+      try {
+        localStorage.removeItem("auth:token");
+      } catch {
+        // ignore
+      }
+    }
   }
 
   const response = await fetch(url, {
@@ -38,8 +54,8 @@ export const request = async <T>(path: string, options: RequestInit = {}): Promi
   if (!response.ok) {
     const messageFromBody =
       data && typeof data === "object"
-        ? (data as { message?: unknown; error?: unknown }).message ??
-          (data as { message?: unknown; error?: unknown }).error
+        ? ((data as { message?: unknown; error?: unknown }).message ??
+          (data as { message?: unknown; error?: unknown }).error)
         : undefined;
     const err = new Error(
       typeof messageFromBody === "string" && messageFromBody.trim()
