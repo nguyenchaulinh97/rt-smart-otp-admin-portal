@@ -32,11 +32,16 @@ export default function ApplicationsPage() {
   const [createForm] = Form.useForm<CreateApplicationInput>();
   const [editForm] = Form.useForm<UpdateApplicationInput>();
 
-  const { data, isLoading, error, refetch } = useApiQuery<ApplicationDto[]>(
-    ["applications", "list"],
-    "/application?limit=200&offset=0",
-  );
-  const rows = useMemo(() => data ?? [], [data]);
+  const { data, isLoading, error, refetch } = useApiQuery<{
+    data?: ApplicationDto[];
+    result?: ApplicationDto[];
+    items?: ApplicationDto[];
+  }>(["applications", "list"], "/application?limit=200&offset=0");
+  const rows = useMemo(() => {
+    if (Array.isArray(data)) return data;
+    const list = data?.data ?? data?.result ?? data?.items ?? [];
+    return Array.isArray(list) ? list : [];
+  }, [data]);
 
   const filteredRows = rows.filter((row) => {
     if (!searchValue) return true;
@@ -164,12 +169,7 @@ export default function ApplicationsPage() {
                 <Button size="small" onClick={() => onOpenEdit(row)} disabled={!getAppId(row)}>
                   {t("applications.edit")}
                 </Button>
-                <Button
-                  size="small"
-                  danger
-                  onClick={() => onDelete(row)}
-                  disabled={!getAppId(row)}
-                >
+                <Button size="small" danger onClick={() => onDelete(row)} disabled={!getAppId(row)}>
                   {t("applications.delete")}
                 </Button>
               </Space>
@@ -192,7 +192,8 @@ export default function ApplicationsPage() {
         onOk={onCreate}
         okText={t("ui.confirm")}
         confirmLoading={createMutation.isPending}
-        destroyOnClose
+        destroyOnHidden
+        forceRender
       >
         <Form
           form={createForm}
@@ -238,7 +239,8 @@ export default function ApplicationsPage() {
         onOk={onEdit}
         okText={t("ui.confirm")}
         confirmLoading={updateMutation.isPending}
-        destroyOnClose
+        destroyOnHidden
+        forceRender
       >
         <Form form={editForm} layout="vertical">
           <Form.Item label={t("applications.id")}>

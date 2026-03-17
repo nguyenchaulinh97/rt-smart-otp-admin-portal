@@ -1,6 +1,7 @@
 "use client";
 
 import { useApiQuery } from "@/services/api";
+import { normalizeToken } from "@/services/http";
 
 export type AdminProfile = {
   username?: string;
@@ -10,7 +11,8 @@ export type AdminProfile = {
 };
 
 export function useProfile() {
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth:token") : undefined;
+  const token =
+    typeof window !== "undefined" ? normalizeToken(localStorage.getItem("auth:token")) : undefined;
   const { data, isLoading, error, refetch } = useApiQuery<AdminProfile | null>(
     ["admin-profile"],
     "/admin/profile",

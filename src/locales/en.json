@@ -372,9 +372,9 @@
   "logs": {
     "title": "Logs & Audit",
     "subtitle": "Review OTP verification and admin actions.",
-    "verifyTab": "OTP Verify Logs",
+    "verifyTab": "Token Events",
     "adminTab": "Admin Actions",
-    "verifyTableTitle": "OTP Verification Logs",
+    "verifyTableTitle": "Token Event Logs",
     "adminTableTitle": "Admin Audit Logs",
     "user": "User",
     "app": "App",

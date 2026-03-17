@@ -22,6 +22,7 @@ describe("request", () => {
     Object.defineProperty(window, "localStorage", {
       value: {
         getItem: jest.fn(() => "abc123"),
+        removeItem: jest.fn(),
       },
       writable: true,
     });
@@ -41,6 +42,34 @@ describe("request", () => {
         }),
       }),
     );
+  });
+
+  it("should skip invalid token values", async () => {
+    const removeItem = jest.fn();
+    Object.defineProperty(window, "localStorage", {
+      value: {
+        getItem: jest.fn(() => "undefined"),
+        removeItem,
+      },
+      writable: true,
+    });
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve("{}"),
+    });
+
+    await request("/secure");
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.not.objectContaining({
+          Authorization: expect.any(String),
+        }),
+      }),
+    );
+    expect(removeItem).toHaveBeenCalledWith("auth:token");
   });
 
   it("should throw error with message from body", async () => {
