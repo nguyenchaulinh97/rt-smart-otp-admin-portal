@@ -119,7 +119,10 @@ export default function AdminDetailPage() {
         </div>
 
         <div className="mt-6">
-          <Link href="/admins" className="text-xs font-semibold text-slate-700 hover:text-slate-900">
+          <Link
+            href="/admins"
+            className="text-xs font-semibold text-slate-700 hover:text-slate-900"
+          >
             {t("ui.back")}
           </Link>
         </div>
@@ -132,7 +135,8 @@ export default function AdminDetailPage() {
         onOk={onResetPassword}
         okText={t("ui.confirm")}
         confirmLoading={resetMutation.isPending}
-        destroyOnClose
+        destroyOnHidden
+        forceRender
       >
         <Form form={resetForm} layout="vertical">
           <Form.Item
@@ -147,4 +151,3 @@ export default function AdminDetailPage() {
     </div>
   );
 }
-

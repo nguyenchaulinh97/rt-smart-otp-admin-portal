@@ -40,6 +40,15 @@ export default function LogsPage() {
   const verifyRows = useMemo(() => verifyData ?? [], [verifyData]);
   const auditRows = useMemo(() => auditData ?? [], [auditData]);
 
+  const resultOptions = useMemo(
+    () =>
+      Array.from(new Set(verifyRows.map((row) => row.result).filter(Boolean))).map((value) => ({
+        label: getStatusLabel(value, t),
+        value,
+      })),
+    [verifyRows, t],
+  );
+
   const filteredVerifyRows = verifyRows.filter((row) => {
     const matchesSearch = searchValue
       ? row.userId.toLowerCase().includes(searchValue.toLowerCase())
@@ -131,10 +140,7 @@ export default function LogsPage() {
                 label: t("logs.filterResult"),
                 placeholder: t("placeholders.result"),
                 type: "select",
-                options: [
-                  { label: getStatusLabel("SUCCESS", t), value: "SUCCESS" },
-                  { label: getStatusLabel("FAIL", t), value: "FAIL" },
-                ],
+                options: resultOptions,
               },
             ]}
             columns={[

@@ -32,11 +32,16 @@ export default function AdminsPage() {
   const [createForm] = Form.useForm<CreateAdminInput>();
   const [resetForm] = Form.useForm<UpdateAdminInput>();
 
-  const { data, isLoading, error, refetch } = useApiQuery<AdminDto[]>(
-    ["admins", "list"],
-    "/admin?limit=200&offset=0",
-  );
-  const rows = useMemo(() => data ?? [], [data]);
+  const { data, isLoading, error, refetch } = useApiQuery<{
+    data?: AdminDto[];
+    result?: AdminDto[];
+    items?: AdminDto[];
+  }>(["admins", "list"], "/admin?limit=200&offset=0");
+  const rows = useMemo(() => {
+    if (Array.isArray(data)) return data;
+    const list = data?.data ?? data?.result ?? data?.items ?? [];
+    return Array.isArray(list) ? list : [];
+  }, [data]);
 
   const filteredRows = rows.filter((row) => {
     if (!searchValue) return true;
@@ -182,7 +187,8 @@ export default function AdminsPage() {
         onOk={onCreate}
         okText={t("ui.confirm")}
         confirmLoading={createMutation.isPending}
-        destroyOnClose
+        destroyOnHidden
+        forceRender
       >
         <Form form={createForm} layout="vertical">
           <Form.Item
@@ -215,7 +221,8 @@ export default function AdminsPage() {
         onOk={onResetPassword}
         okText={t("ui.confirm")}
         confirmLoading={resetMutation.isPending}
-        destroyOnClose
+        destroyOnHidden
+        forceRender
       >
         <Form form={resetForm} layout="vertical">
           <Form.Item label={t("admins.username")}>
@@ -233,4 +240,3 @@ export default function AdminsPage() {
     </div>
   );
 }
-

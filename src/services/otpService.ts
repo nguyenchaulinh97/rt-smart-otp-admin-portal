@@ -20,6 +20,57 @@ import {
 
 const isMockEnabled = () => !API_BASE;
 
+type TokenEventPayload = Record<string, unknown>;
+
+const listKeys = [
+  "data",
+  "result",
+  "items",
+  "rows",
+  "list",
+  "events",
+  "tokenEvents",
+  "token_events",
+];
+
+const normalizeList = <T>(input: unknown): T[] => {
+  if (Array.isArray(input)) return input as T[];
+  if (!input || typeof input !== "object") return [];
+  for (const key of listKeys) {
+    const value = (input as Record<string, unknown>)[key];
+    if (Array.isArray(value)) return value as T[];
+    if (value && typeof value === "object") {
+      for (const nestedKey of listKeys) {
+        const nested = (value as Record<string, unknown>)[nestedKey];
+        if (Array.isArray(nested)) return nested as T[];
+      }
+    }
+  }
+  return [];
+};
+
+const toText = (value: unknown) => (value === undefined || value === null ? "" : String(value));
+
+const toResult = (value: unknown): "SUCCESS" | "FAIL" => {
+  const upper = toText(value).toUpperCase();
+  if (upper === "SUCCESS" || upper === "OK" || upper === "PASSED" || upper === "PASS") {
+    return "SUCCESS";
+  }
+  if (upper === "FAIL" || upper === "FAILED" || upper === "ERROR") {
+    return "FAIL";
+  }
+  return "SUCCESS";
+};
+
+const mapTokenEventToVerifyLog = (row: TokenEventPayload): ApiVerifyLog => ({
+  id: toText(row.id ?? row.event_id ?? row.token_id ?? row.tokenId ?? row.uuid),
+  userId: toText(row.user_id ?? row.userId ?? row.username),
+  appId: toText(row.app_id ?? row.appId),
+  tokenId: toText(row.token_id ?? row.tokenId ?? row.id ?? row.event_id),
+  result: toResult(row.result ?? row.status ?? row.event_type ?? row.type),
+  createdAt: toText(row.created_at ?? row.createdAt ?? row.timestamp ?? row.time),
+});
+
 export const otpService = {
   getUsers: async () => {
     if (isMockEnabled()) return (await mockApi.getUsers()).data;
@@ -71,13 +122,15 @@ export const otpService = {
   },
   getAuditLogs: async () => {
     if (isMockEnabled()) return (await mockApi.getAuditLogs()).data;
-    const data = await request<ApiAuditLog[]>(endpoints.auditLogs());
-    return data.map(mapAuditLog);
+    const data = await request<unknown>(endpoints.auditLogs());
+    return normalizeList<ApiAuditLog>(data).map(mapAuditLog);
   },
   getVerifyLogs: async () => {
     if (isMockEnabled()) return (await mockApi.getVerifyLogs()).data;
-    const data = await request<ApiVerifyLog[]>(endpoints.verifyLogs());
-    return data.map(mapVerifyLog);
+    const data = await request<unknown>(endpoints.tokenEvents());
+    return normalizeList<TokenEventPayload>(data).map((row) =>
+      mapVerifyLog(mapTokenEventToVerifyLog(row)),
+    );
   },
   getTransactions: async () => {
     if (isMockEnabled()) return (await mockApi.getTransactions()).data;
