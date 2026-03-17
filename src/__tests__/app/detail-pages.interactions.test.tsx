@@ -251,20 +251,38 @@ describe("detail pages interactions", () => {
     };
     queryByKey.devices = {
       data: [
-        { id: "d_1", userId: "u_1", appId: "broker", platform: "iOS", status: "Active", lastSeen: "now" },
+        {
+          id: "d_1",
+          userId: "u_1",
+          appId: "broker",
+          platform: "iOS",
+          status: "Active",
+          lastSeen: "now",
+        },
       ],
       error: null,
       isLoading: false,
       refetch: jest.fn(),
     };
     queryByKey.verifyLogs = {
-      data: [{ id: "v_1", userId: "u_1", appId: "broker", result: "SUCCESS", createdAt: "2024-01-03" }],
+      data: [
+        { id: "v_1", userId: "u_1", appId: "broker", result: "SUCCESS", createdAt: "2024-01-03" },
+      ],
       error: null,
       isLoading: false,
       refetch: jest.fn(),
     };
     queryByKey.auditLogs = {
-      data: [{ id: "a_1", actor: "admin", action: "LOCK", target: "u_1", status: "SUCCESS", createdAt: "2024-01-04" }],
+      data: [
+        {
+          id: "a_1",
+          actor: "admin",
+          action: "LOCK",
+          target: "u_1",
+          status: "SUCCESS",
+          createdAt: "2024-01-04",
+        },
+      ],
       error: null,
       isLoading: false,
       refetch: jest.fn(),

@@ -6,7 +6,7 @@ import TopBar from "@/components/TopBar";
 import { Drawer } from "antd";
 import { useState } from "react";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 

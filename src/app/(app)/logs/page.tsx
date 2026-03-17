@@ -7,8 +7,7 @@ import { downloadCsv } from "@/lib/csv";
 import { type AuditLogRecord, type VerifyLogRecord } from "@/mock/api";
 import { otpService } from "@/services/otpService";
 import { formatDateTime, getStatusColor, getStatusLabel } from "@/utils/formatters";
-import { Button } from "antd";
-import { Tag } from "antd";
+import { Button, Tag } from "antd";
 import { useMemo, useState } from "react";
 
 type VerifyRow = VerifyLogRecord;
@@ -129,8 +128,8 @@ export default function LogsPage() {
             }}
             onFilterChange={(key, value) => {
               if (key === "userId") setSearchValue(value);
-              if (key === "appId") setSelectedApp(value ? value : null);
-              if (key === "result") setSelectedResult(value ? value : null);
+              if (key === "appId") setSelectedApp(value ?? null);
+              if (key === "result") setSelectedResult(value ?? null);
             }}
             filters={[
               { key: "userId", label: t("logs.filterUser"), placeholder: t("placeholders.userId") },
@@ -197,8 +196,8 @@ export default function LogsPage() {
               action: selectedAction ?? "",
             }}
             onFilterChange={(key, value) => {
-              if (key === "actor") setSelectedActor(value ? value : null);
-              if (key === "action") setSelectedAction(value ? value : null);
+              if (key === "actor") setSelectedActor(value ?? null);
+              if (key === "action") setSelectedAction(value ?? null);
             }}
             filters={[
               { key: "actor", label: t("logs.filterActor"), placeholder: t("placeholders.actor") },

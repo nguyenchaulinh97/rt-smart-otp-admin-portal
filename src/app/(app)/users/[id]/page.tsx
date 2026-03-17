@@ -89,6 +89,10 @@ export default function UserDetailPage() {
     return <div className="text-sm text-slate-500">{t("table.empty")}</div>;
   }
 
+  const permissionDenied = t("ui.permissionDenied");
+  const canEditUser = canAccess(role, "users:edit");
+  const editDisabled = !canEditUser;
+
   return (
     <div className="space-y-6">
       <Breadcrumbs
@@ -103,8 +107,8 @@ export default function UserDetailPage() {
           <Button
             type="default"
             size="small"
-            disabled={!canAccess(role, "users:edit")}
-            title={!canAccess(role, "users:edit") ? t("ui.permissionDenied") : undefined}
+            disabled={editDisabled}
+            title={editDisabled ? permissionDenied : undefined}
             onClick={() => router.push(`/users/${data.id}/edit`)}
           >
             {t("users.editTitle")}
@@ -191,69 +195,67 @@ export default function UserDetailPage() {
                     <Typography.Text type="secondary">
                       {getStatusLabel(token.status, t)}
                     </Typography.Text>
-                    <Tooltip
-                      title={
-                        token.status === "Locked"
-                          ? !canAccess(role, "tokens:unlock")
-                            ? t("ui.permissionDenied")
-                            : undefined
-                          : !canAccess(role, "tokens:lock")
-                            ? t("ui.permissionDenied")
-                            : undefined
-                      }
-                    >
-                      <span>
-                        <Button
-                          type="default"
-                          size="small"
-                          disabled={
-                            token.status === "Locked"
-                              ? !canAccess(role, "tokens:unlock")
-                              : !canAccess(role, "tokens:lock")
-                          }
-                          onClick={async () => {
-                            const accepted = await confirm({
-                              title: t("ui.confirmTitle"),
-                              message:
-                                token.status === "Locked"
-                                  ? t("tokens.confirmUnlock")
-                                  : t("tokens.confirmLock"),
-                              confirmLabel: t("ui.confirm"),
-                            });
-                            if (!accepted) return;
-                            toast({ variant: "success", message: t("tokens.actionToast") });
-                          }}
-                        >
-                          {token.status === "Locked"
-                            ? t("tokens.actionUnlock")
-                            : t("tokens.actionLock")}
-                        </Button>
-                      </span>
-                    </Tooltip>
-                    <Tooltip
-                      title={
-                        !canAccess(role, "tokens:reset") ? t("ui.permissionDenied") : undefined
-                      }
-                    >
-                      <span>
-                        <Button
-                          type="default"
-                          size="small"
-                          disabled={!canAccess(role, "tokens:reset")}
-                          onClick={async () => {
-                            const accepted = await confirm({
-                              title: t("ui.confirmTitle"),
-                              message: t("tokens.confirmReset"),
-                              confirmLabel: t("ui.confirm"),
-                            });
-                            if (!accepted) return;
-                            toast({ variant: "success", message: t("tokens.actionToast") });
-                          }}
-                        >
-                          {t("tokens.actionReset")}
-                        </Button>
-                      </span>
-                    </Tooltip>
+                    {(() => {
+                      const isLocked = token.status === "Locked";
+                      const canUnlock = canAccess(role, "tokens:unlock");
+                      const canLock = canAccess(role, "tokens:lock");
+                      const canReset = canAccess(role, "tokens:reset");
+                      const actionDisabled = isLocked ? !canUnlock : !canLock;
+                      const actionTooltip = actionDisabled ? permissionDenied : undefined;
+                      const actionLabel = isLocked
+                        ? t("tokens.actionUnlock")
+                        : t("tokens.actionLock");
+                      const confirmMessage = isLocked
+                        ? t("tokens.confirmUnlock")
+                        : t("tokens.confirmLock");
+                      const resetDisabled = !canReset;
+                      const resetTooltip = resetDisabled ? permissionDenied : undefined;
+
+                      return (
+                        <>
+                          <Tooltip title={actionTooltip}>
+                            <span>
+                              <Button
+                                type="default"
+                                size="small"
+                                disabled={actionDisabled}
+                                onClick={async () => {
+                                  const accepted = await confirm({
+                                    title: t("ui.confirmTitle"),
+                                    message: confirmMessage,
+                                    confirmLabel: t("ui.confirm"),
+                                  });
+                                  if (!accepted) return;
+                                  toast({ variant: "success", message: t("tokens.actionToast") });
+                                }}
+                              >
+                                {actionLabel}
+                              </Button>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={resetTooltip}>
+                            <span>
+                              <Button
+                                type="default"
+                                size="small"
+                                disabled={resetDisabled}
+                                onClick={async () => {
+                                  const accepted = await confirm({
+                                    title: t("ui.confirmTitle"),
+                                    message: t("tokens.confirmReset"),
+                                    confirmLabel: t("ui.confirm"),
+                                  });
+                                  if (!accepted) return;
+                                  toast({ variant: "success", message: t("tokens.actionToast") });
+                                }}
+                              >
+                                {t("tokens.actionReset")}
+                              </Button>
+                            </span>
+                          </Tooltip>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
@@ -286,55 +288,59 @@ export default function UserDetailPage() {
                     <Typography.Text type="secondary">
                       {getStatusLabel(device.status, t)}
                     </Typography.Text>
-                    <Tooltip
-                      title={
-                        !canAccess(role, "devices:block") ? t("ui.permissionDenied") : undefined
-                      }
-                    >
-                      <span>
-                        <Button
-                          type="default"
-                          size="small"
-                          danger
-                          disabled={!canAccess(role, "devices:block")}
-                          onClick={async () => {
-                            const accepted = await confirm({
-                              title: t("ui.confirmTitle"),
-                              message: t("devices.confirmBlock"),
-                              confirmLabel: t("ui.confirm"),
-                            });
-                            if (!accepted) return;
-                            toast({ variant: "success", message: t("devices.actionToast") });
-                          }}
-                        >
-                          {t("devices.actionBlock")}
-                        </Button>
-                      </span>
-                    </Tooltip>
-                    <Tooltip
-                      title={
-                        !canAccess(role, "devices:unbind") ? t("ui.permissionDenied") : undefined
-                      }
-                    >
-                      <span>
-                        <Button
-                          type="default"
-                          size="small"
-                          disabled={!canAccess(role, "devices:unbind")}
-                          onClick={async () => {
-                            const accepted = await confirm({
-                              title: t("ui.confirmTitle"),
-                              message: t("devices.confirmUnbind"),
-                              confirmLabel: t("ui.confirm"),
-                            });
-                            if (!accepted) return;
-                            toast({ variant: "success", message: t("devices.actionToast") });
-                          }}
-                        >
-                          {t("devices.actionUnbind")}
-                        </Button>
-                      </span>
-                    </Tooltip>
+                    {(() => {
+                      const canBlock = canAccess(role, "devices:block");
+                      const canUnbind = canAccess(role, "devices:unbind");
+                      const blockDisabled = !canBlock;
+                      const unbindDisabled = !canUnbind;
+                      const blockTooltip = blockDisabled ? permissionDenied : undefined;
+                      const unbindTooltip = unbindDisabled ? permissionDenied : undefined;
+                      return (
+                        <>
+                          <Tooltip title={blockTooltip}>
+                            <span>
+                              <Button
+                                type="default"
+                                size="small"
+                                danger
+                                disabled={blockDisabled}
+                                onClick={async () => {
+                                  const accepted = await confirm({
+                                    title: t("ui.confirmTitle"),
+                                    message: t("devices.confirmBlock"),
+                                    confirmLabel: t("ui.confirm"),
+                                  });
+                                  if (!accepted) return;
+                                  toast({ variant: "success", message: t("devices.actionToast") });
+                                }}
+                              >
+                                {t("devices.actionBlock")}
+                              </Button>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={unbindTooltip}>
+                            <span>
+                              <Button
+                                type="default"
+                                size="small"
+                                disabled={unbindDisabled}
+                                onClick={async () => {
+                                  const accepted = await confirm({
+                                    title: t("ui.confirmTitle"),
+                                    message: t("devices.confirmUnbind"),
+                                    confirmLabel: t("ui.confirm"),
+                                  });
+                                  if (!accepted) return;
+                                  toast({ variant: "success", message: t("devices.actionToast") });
+                                }}
+                              >
+                                {t("devices.actionUnbind")}
+                              </Button>
+                            </span>
+                          </Tooltip>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

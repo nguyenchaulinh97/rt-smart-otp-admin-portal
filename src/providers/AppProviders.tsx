@@ -48,7 +48,7 @@ const ThemedConfigProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default function AppProviders({ children }: { children: React.ReactNode }) {
+export default function AppProviders({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>

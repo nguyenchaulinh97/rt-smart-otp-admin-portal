@@ -7,13 +7,13 @@ import {
   DashboardOutlined,
   FileTextOutlined,
   HeartOutlined,
+  MenuOutlined,
   MobileOutlined,
   QrcodeOutlined,
   SafetyCertificateOutlined,
   SafetyOutlined,
   SwapOutlined,
   UserOutlined,
-  MenuOutlined,
 } from "@ant-design/icons";
 import { Button, Layout, Menu, Typography } from "antd";
 import { usePathname, useRouter } from "next/navigation";
@@ -49,7 +49,7 @@ export default function Sidebar({
   onNavigate,
   collapsed: collapsedProp,
   onCollapse,
-}: SidebarProps) {
+}: Readonly<SidebarProps>) {
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useI18n();
@@ -115,7 +115,7 @@ export default function Sidebar({
             size="small"
             icon={<MenuOutlined />}
             onClick={() => onNavigate?.()}
-            aria-label="Close menu"
+            aria-label={t("ui.closeMenu")}
           />
         </div>
 

@@ -47,7 +47,7 @@ export default function TokensPage() {
     return Array.from(map.values());
   }, [rows]);
   const handleBulkAction =
-    (action: string, label: string, variant?: "danger" | "primary") => async (ids: string[]) => {
+    (label: string, variant?: "danger" | "primary") => async (ids: string[]) => {
       if (ids.length === 0) return;
       const accepted = await confirm({
         title: t("ui.confirmTitle"),
@@ -58,13 +58,19 @@ export default function TokensPage() {
       if (!accepted) return;
       setIsLoading(true);
       setIsError(false);
-      window.setTimeout(() => {
+      globalThis.setTimeout(() => {
         setIsLoading(false);
         toast({ variant: "success", message: t("ui.toastBulk") });
       }, 400);
-      void action;
-      void ids;
     };
+  const runBulkAction = (label: string, variant?: "danger" | "primary") => {
+    const handler = handleBulkAction(label, variant);
+    return (ids: string[]) => {
+      handler(ids).catch(() => {
+        // ignore
+      });
+    };
+  };
   const handleRowAction = async (message: string) => {
     const accepted = await confirm({
       title: t("ui.confirmTitle"),
@@ -75,7 +81,7 @@ export default function TokensPage() {
     toast({ variant: "success", message: t("tokens.actionToast") });
   };
   const resolvedLoading = isLoading || isFetching;
-  const resolvedError = isError ? t("table.error") : error ? t("table.error") : undefined;
+  const resolvedError = isError || error ? t("table.error") : undefined;
   const appOptions = useMemo(
     () =>
       Array.from(new Set(uniqueRows.map((row) => row.appId))).map((value) => ({
@@ -128,7 +134,7 @@ export default function TokensPage() {
             key: "lock",
             label: t("tokens.bulkLock"),
             variant: "danger",
-            onClick: handleBulkAction("lock", t("tokens.bulkLock"), "danger"),
+            onClick: runBulkAction(t("tokens.bulkLock"), "danger"),
             disabled: !canAccess(role, "tokens:lock"),
             disabledReason: t("ui.permissionDenied"),
           },
@@ -136,14 +142,14 @@ export default function TokensPage() {
             key: "unlock",
             label: t("tokens.bulkUnlock"),
             variant: "secondary",
-            onClick: handleBulkAction("unlock", t("tokens.bulkUnlock")),
+            onClick: runBulkAction(t("tokens.bulkUnlock")),
             disabled: !canAccess(role, "tokens:unlock"),
             disabledReason: t("ui.permissionDenied"),
           },
           {
             key: "reset",
             label: t("tokens.bulkReset"),
-            onClick: handleBulkAction("reset", t("tokens.bulkReset")),
+            onClick: runBulkAction(t("tokens.bulkReset")),
             disabled: !canAccess(role, "tokens:reset"),
             disabledReason: t("ui.permissionDenied"),
           },
@@ -151,7 +157,7 @@ export default function TokensPage() {
             key: "export",
             label: t("tokens.bulkExport"),
             variant: "secondary",
-            onClick: handleBulkAction("export", t("tokens.bulkExport")),
+            onClick: runBulkAction(t("tokens.bulkExport")),
             disabled: !canAccess(role, "tokens:export"),
             disabledReason: t("ui.permissionDenied"),
           },
@@ -164,9 +170,9 @@ export default function TokensPage() {
         }}
         onFilterChange={(key, value) => {
           if (key === "tokenId") setSearchValue(value);
-          if (key === "appId") setSelectedApp(value ? value : null);
-          if (key === "userId") setSelectedUser(value ? value : null);
-          if (key === "status") setSelectedStatus(value ? value : null);
+          if (key === "appId") setSelectedApp(value ?? null);
+          if (key === "userId") setSelectedUser(value ?? null);
+          if (key === "status") setSelectedStatus(value ?? null);
         }}
         filters={[
           {
@@ -247,43 +253,56 @@ export default function TokensPage() {
               const canReset = canAccess(role, "tokens:reset");
               const canExport = canAccess(role, "tokens:export");
               const lockDisabled = isLocked ? !canUnlock : !canLock;
+              const permissionDenied = t("ui.permissionDenied");
+              const resetDisabled = !canReset;
+              const exportDisabled = !canExport;
               return (
                 <div className="flex flex-wrap items-center gap-2">
-                  <Tooltip title={lockDisabled ? t("ui.permissionDenied") : undefined}>
+                  <Tooltip title={lockDisabled ? permissionDenied : undefined}>
                     <span>
                       <Button
                         type="default"
                         size="small"
                         disabled={lockDisabled}
-                        onClick={() =>
+                        onClick={() => {
                           handleRowAction(
                             isLocked ? t("tokens.confirmUnlock") : t("tokens.confirmLock"),
-                          )
-                        }
+                          ).catch(() => {
+                            // ignore
+                          });
+                        }}
                       >
                         {isLocked ? t("tokens.actionUnlock") : t("tokens.actionLock")}
                       </Button>
                     </span>
                   </Tooltip>
-                  <Tooltip title={!canReset ? t("ui.permissionDenied") : undefined}>
+                  <Tooltip title={resetDisabled ? permissionDenied : undefined}>
                     <span>
                       <Button
                         type="default"
                         size="small"
-                        disabled={!canReset}
-                        onClick={() => handleRowAction(t("tokens.confirmReset"))}
+                        disabled={resetDisabled}
+                        onClick={() => {
+                          handleRowAction(t("tokens.confirmReset")).catch(() => {
+                            // ignore
+                          });
+                        }}
                       >
                         {t("tokens.actionReset")}
                       </Button>
                     </span>
                   </Tooltip>
-                  <Tooltip title={!canExport ? t("ui.permissionDenied") : undefined}>
+                  <Tooltip title={exportDisabled ? permissionDenied : undefined}>
                     <span>
                       <Button
                         type="default"
                         size="small"
-                        disabled={!canExport}
-                        onClick={() => handleRowAction(t("tokens.confirmExport"))}
+                        disabled={exportDisabled}
+                        onClick={() => {
+                          handleRowAction(t("tokens.confirmExport")).catch(() => {
+                            // ignore
+                          });
+                        }}
                       >
                         {t("tokens.actionExport")}
                       </Button>

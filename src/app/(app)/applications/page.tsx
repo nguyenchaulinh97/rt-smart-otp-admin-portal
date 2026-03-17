@@ -244,7 +244,7 @@ export default function ApplicationsPage() {
       >
         <Form form={editForm} layout="vertical">
           <Form.Item label={t("applications.id")}>
-            <Input value={getAppId((selected ?? {}) as ApplicationDto)} disabled />
+            <Input value={selected ? getAppId(selected) : ""} disabled />
           </Form.Item>
           <Form.Item
             label={t("applications.version")}

@@ -80,6 +80,7 @@
     "password": "Password",
     "remember": "Remember me",
     "forgot": "Forgot password?",
+    "error": "Login failed",
     "button": "Sign in"
   },
   "profile": {
@@ -464,7 +465,13 @@
     "confirmBulkMessage": "Apply action to selected items?",
     "confirmPolicySave": "Save policy changes?",
     "confirmSave": "Save changes?",
-    "permissionDenied": "You don't have permission for this action."
+    "permissionDenied": "You don't have permission for this action.",
+    "changeLanguage": "Change language",
+    "changeTheme": "Change theme",
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme",
+    "signOut": "Sign out",
+    "closeMenu": "Close menu"
   },
   "roles": {
     "admin": "Admin",

@@ -67,6 +67,10 @@ export default function AppDetailPage() {
     return <div className="text-sm text-slate-500">{t("table.empty")}</div>;
   }
 
+  const canEdit = canAccess(role, "apps:edit");
+  const editDisabled = !canEdit;
+  const permissionDenied = t("ui.permissionDenied");
+
   return (
     <div className="space-y-6">
       <Breadcrumbs items={[{ label: t("breadcrumbs.apps"), href: "/apps" }, { label: data.id }]} />
@@ -80,8 +84,8 @@ export default function AppDetailPage() {
         <div className="flex items-center gap-3">
           <Button
             type="default"
-            disabled={!canAccess(role, "apps:edit")}
-            title={!canAccess(role, "apps:edit") ? t("ui.permissionDenied") : undefined}
+            disabled={editDisabled}
+            title={editDisabled ? permissionDenied : undefined}
             onClick={() => router.push(`/apps/${data.id}/edit`)}
           >
             {t("apps.editTitle")}
@@ -192,6 +196,9 @@ export default function AppDetailPage() {
                 const canReset = canAccess(role, "tokens:reset");
                 const lockDisabled = isLocked ? !canUnlock : !canLock;
                 const lockLabel = isLocked ? t("tokens.actionUnlock") : t("tokens.actionLock");
+                const lockTooltip = lockDisabled ? permissionDenied : undefined;
+                const resetDisabled = !canReset;
+                const resetTooltip = resetDisabled ? permissionDenied : undefined;
                 return (
                   <div
                     key={token.id}
@@ -212,7 +219,7 @@ export default function AppDetailPage() {
                       <Typography.Text type="secondary">
                         {getStatusLabel(token.status, t)}
                       </Typography.Text>
-                      <Tooltip title={lockDisabled ? t("ui.permissionDenied") : undefined}>
+                      <Tooltip title={lockTooltip}>
                         <span>
                           <Button
                             type="default"
@@ -228,12 +235,12 @@ export default function AppDetailPage() {
                           </Button>
                         </span>
                       </Tooltip>
-                      <Tooltip title={!canReset ? t("ui.permissionDenied") : undefined}>
+                      <Tooltip title={resetTooltip}>
                         <span>
                           <Button
                             type="default"
                             size="small"
-                            disabled={!canReset}
+                            disabled={resetDisabled}
                             onClick={() => handleTokenAction(t("tokens.confirmReset"))}
                           >
                             {t("tokens.actionReset")}

@@ -23,13 +23,11 @@ export type UpdateAdminInput = {
 const encode = (value: string) => encodeURIComponent(value);
 
 export const adminService = {
-  list: (limit = 50, offset = 0) =>
-    request<AdminDto[]>(`/admin?limit=${limit}&offset=${offset}`),
+  list: (limit = 50, offset = 0) => request<AdminDto[]>(`/admin?limit=${limit}&offset=${offset}`),
 
   get: (id: string) => request<AdminDto>(`/admin/${encode(id)}`),
 
-  getByUsername: (username: string) =>
-    request<AdminDto>(`/admin/username/${encode(username)}`),
+  getByUsername: (username: string) => request<AdminDto>(`/admin/username/${encode(username)}`),
 
   create: (input: CreateAdminInput) =>
     request<AdminDto>("/admin", {
@@ -48,4 +46,3 @@ export const adminService = {
       method: "DELETE",
     }),
 };
-

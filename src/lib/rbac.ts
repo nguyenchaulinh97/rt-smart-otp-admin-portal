@@ -1,6 +1,5 @@
-import { ROLE_PERMISSIONS, ROLES, type Permission, type Role } from "@/constants/rbac";
-
-export type { Permission, Role };
+import { Permission, Role, ROLE_PERMISSIONS, ROLES } from "@/constants/rbac";
+export type { Permission, Role } from "@/constants/rbac";
 
 export const canAccess = (role: Role, permission: Permission) =>
   ROLE_PERMISSIONS[role].includes(permission);

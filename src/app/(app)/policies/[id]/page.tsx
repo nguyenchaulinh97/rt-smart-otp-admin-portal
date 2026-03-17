@@ -38,6 +38,10 @@ export default function PolicyDetailPage() {
     return <div className="text-sm text-slate-500">{t("table.empty")}</div>;
   }
 
+  const canEdit = canAccess(role, "policies:edit");
+  const editDisabled = !canEdit;
+  const permissionDenied = t("ui.permissionDenied");
+
   return (
     <div className="space-y-6">
       <Breadcrumbs
@@ -52,8 +56,8 @@ export default function PolicyDetailPage() {
           <Button
             type="default"
             size="small"
-            disabled={!canAccess(role, "policies:edit")}
-            title={!canAccess(role, "policies:edit") ? t("ui.permissionDenied") : undefined}
+            disabled={editDisabled}
+            title={editDisabled ? permissionDenied : undefined}
             onClick={() => router.push(`/policies/${data.id}/edit`)}
           >
             {t("policies.editTitle")}

@@ -56,7 +56,7 @@ export default function TokenDetailPage() {
   const canReset = canAccess(role, "tokens:reset");
   const canExport = canAccess(role, "tokens:export");
 
-  const handleAction = async (actionKey: string, message: string) => {
+  const handleAction = async (message: string) => {
     const accepted = await confirm({
       title: t("ui.confirmTitle"),
       message,
@@ -64,17 +64,17 @@ export default function TokenDetailPage() {
     });
     if (!accepted) return;
     toast({ variant: "success", message: t("tokens.actionToast") });
-    void actionKey;
   };
 
   const lockLabel = data.status === "Locked" ? t("tokens.actionUnlock") : t("tokens.actionLock");
   const lockHandler = () =>
-    handleAction(
-      data.status === "Locked" ? "unlock" : "lock",
-      data.status === "Locked" ? t("tokens.confirmUnlock") : t("tokens.confirmLock"),
-    );
+    handleAction(data.status === "Locked" ? t("tokens.confirmUnlock") : t("tokens.confirmLock"));
   const lockDisabled = data.status === "Locked" ? !canUnlock : !canLock;
   const lockDisabledReason = lockDisabled ? t("ui.permissionDenied") : undefined;
+  const resetDisabled = !canReset;
+  const resetTooltip = resetDisabled ? t("ui.permissionDenied") : undefined;
+  const exportDisabled = !canExport;
+  const exportTooltip = exportDisabled ? t("ui.permissionDenied") : undefined;
 
   return (
     <div className="space-y-6">
@@ -96,25 +96,25 @@ export default function TokenDetailPage() {
               </Button>
             </span>
           </Tooltip>
-          <Tooltip title={!canReset ? t("ui.permissionDenied") : undefined}>
+          <Tooltip title={resetTooltip}>
             <span>
               <Button
                 type="default"
                 size="small"
-                disabled={!canReset}
-                onClick={() => handleAction("reset", t("tokens.confirmReset"))}
+                disabled={resetDisabled}
+                onClick={() => handleAction(t("tokens.confirmReset"))}
               >
                 {t("tokens.actionReset")}
               </Button>
             </span>
           </Tooltip>
-          <Tooltip title={!canExport ? t("ui.permissionDenied") : undefined}>
+          <Tooltip title={exportTooltip}>
             <span>
               <Button
                 type="default"
                 size="small"
-                disabled={!canExport}
-                onClick={() => handleAction("export", t("tokens.confirmExport"))}
+                disabled={exportDisabled}
+                onClick={() => handleAction(t("tokens.confirmExport"))}
               >
                 {t("tokens.actionExport")}
               </Button>

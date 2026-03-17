@@ -46,4 +46,3 @@ export const applicationService = {
       method: "DELETE",
     }),
 };
-

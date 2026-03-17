@@ -36,7 +36,7 @@ export default function AppsPage() {
   } = useMockQuery<AppRow[]>(() => otpService.getApps());
   const rows = useMemo(() => data ?? [], [data]);
   const handleBulkAction =
-    (action: string, label: string, variant?: "danger" | "primary") => async (ids: string[]) => {
+    (label: string, variant?: "danger" | "primary") => async (ids: string[]) => {
       if (ids.length === 0) return;
       const accepted = await confirm({
         title: t("ui.confirmTitle"),
@@ -47,15 +47,21 @@ export default function AppsPage() {
       if (!accepted) return;
       setIsLoading(true);
       setIsError(false);
-      window.setTimeout(() => {
+      globalThis.setTimeout(() => {
         setIsLoading(false);
         toast({ variant: "success", message: t("ui.toastBulk") });
       }, 400);
-      void action;
-      void ids;
     };
+  const runBulkAction = (label: string, variant?: "danger" | "primary") => {
+    const handler = handleBulkAction(label, variant);
+    return (ids: string[]) => {
+      handler(ids).catch(() => {
+        // ignore
+      });
+    };
+  };
   const resolvedLoading = isLoading || isFetching;
-  const resolvedError = isError ? t("table.error") : error ? t("table.error") : undefined;
+  const resolvedError = isError || error ? t("table.error") : undefined;
   const policyOptions = useMemo(
     () =>
       Array.from(new Set(rows.map((row) => row.policy))).map((value) => ({ label: value, value })),
@@ -96,14 +102,14 @@ export default function AppsPage() {
             key: "pause",
             label: t("apps.bulkPause"),
             variant: "secondary",
-            onClick: handleBulkAction("pause", t("apps.bulkPause")),
+            onClick: runBulkAction(t("apps.bulkPause")),
             disabled: !canAccess(role, "apps:pause"),
             disabledReason: t("ui.permissionDenied"),
           },
           {
             key: "activate",
             label: t("apps.bulkActivate"),
-            onClick: handleBulkAction("activate", t("apps.bulkActivate")),
+            onClick: runBulkAction(t("apps.bulkActivate")),
             disabled: !canAccess(role, "apps:activate"),
             disabledReason: t("ui.permissionDenied"),
           },
@@ -115,8 +121,8 @@ export default function AppsPage() {
         }}
         onFilterChange={(key, value) => {
           if (key === "appId") setSearchValue(value);
-          if (key === "policy") setSelectedPolicy(value ? value : null);
-          if (key === "status") setSelectedStatus(value ? value : null);
+          if (key === "policy") setSelectedPolicy(value ?? null);
+          if (key === "status") setSelectedStatus(value ?? null);
         }}
         filters={[
           { key: "appId", label: t("apps.filterApp"), placeholder: t("placeholders.appId") },

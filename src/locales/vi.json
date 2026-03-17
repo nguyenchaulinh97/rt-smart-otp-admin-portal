@@ -81,6 +81,7 @@
     "password": "Mật khẩu",
     "remember": "Ghi nhớ",
     "forgot": "Quên mật khẩu?",
+    "error": "Đăng nhập thất bại",
     "button": "Đăng nhập"
   },
   "profile": {
@@ -466,7 +467,13 @@
     "confirmBulkMessage": "Áp dụng thao tác cho các mục đã chọn?",
     "confirmPolicySave": "Lưu thay đổi chính sách?",
     "confirmSave": "Lưu thay đổi?",
-    "permissionDenied": "Bạn không có quyền thực hiện thao tác này."
+    "permissionDenied": "Bạn không có quyền thực hiện thao tác này.",
+    "changeLanguage": "Đổi ngôn ngữ",
+    "changeTheme": "Đổi giao diện",
+    "switchToLight": "Chuyển sang giao diện sáng",
+    "switchToDark": "Chuyển sang giao diện tối",
+    "signOut": "Đăng xuất",
+    "closeMenu": "Đóng menu"
   },
   "roles": {
     "admin": "Admin",

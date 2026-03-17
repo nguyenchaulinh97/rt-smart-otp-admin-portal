@@ -32,14 +32,10 @@ describe("providers", () => {
     );
 
     expect(screen.getByTestId("toggle-theme")).toHaveTextContent("dark");
-    await waitFor(() =>
-      expect(document.documentElement.getAttribute("data-theme")).toBe("dark"),
-    );
+    await waitFor(() => expect(document.documentElement.getAttribute("data-theme")).toBe("dark"));
 
     fireEvent.click(screen.getByTestId("toggle-theme"));
-    await waitFor(() =>
-      expect(document.documentElement.getAttribute("data-theme")).toBe("light"),
-    );
+    await waitFor(() => expect(document.documentElement.getAttribute("data-theme")).toBe("light"));
   });
 
   it("ThemeProvider resolves dark theme from matchMedia and setTheme works", async () => {

@@ -37,7 +37,7 @@ export default function UsersPage() {
   } = useMockQuery<UserRow[]>(() => otpService.getUsers());
   const rows = useMemo(() => data ?? [], [data]);
   const handleBulkAction =
-    (action: string, label: string, variant?: "danger" | "primary") => async (ids: string[]) => {
+    (label: string, variant?: "danger" | "primary") => async (ids: string[]) => {
       if (ids.length === 0) return;
       const accepted = await confirm({
         title: t("ui.confirmTitle"),
@@ -48,15 +48,21 @@ export default function UsersPage() {
       if (!accepted) return;
       setIsLoading(true);
       setIsError(false);
-      window.setTimeout(() => {
+      globalThis.setTimeout(() => {
         setIsLoading(false);
         toast({ variant: "success", message: t("ui.toastBulk") });
       }, 400);
-      void action;
-      void ids;
     };
+  const runBulkAction = (label: string, variant?: "danger" | "primary") => {
+    const handler = handleBulkAction(label, variant);
+    return (ids: string[]) => {
+      handler(ids).catch(() => {
+        // ignore
+      });
+    };
+  };
   const resolvedLoading = isLoading || isFetching;
-  const resolvedError = isError ? t("table.error") : error ? t("table.error") : undefined;
+  const resolvedError = isError || error ? t("table.error") : undefined;
   const appOptions = useMemo(
     () =>
       Array.from(new Set(rows.map((row) => row.appId))).map((value) => ({ label: value, value })),
@@ -103,7 +109,7 @@ export default function UsersPage() {
             key: "lock",
             label: t("users.bulkLock"),
             variant: "danger",
-            onClick: handleBulkAction("lock", t("users.bulkLock"), "danger"),
+            onClick: runBulkAction(t("users.bulkLock"), "danger"),
             disabled: !canAccess(role, "users:lock"),
             disabledReason: t("ui.permissionDenied"),
           },
@@ -111,14 +117,14 @@ export default function UsersPage() {
             key: "unlock",
             label: t("users.bulkUnlock"),
             variant: "secondary",
-            onClick: handleBulkAction("unlock", t("users.bulkUnlock")),
+            onClick: runBulkAction(t("users.bulkUnlock")),
             disabled: !canAccess(role, "users:unlock"),
             disabledReason: t("ui.permissionDenied"),
           },
           {
             key: "reset",
             label: t("users.bulkReset"),
-            onClick: handleBulkAction("reset", t("users.bulkReset")),
+            onClick: runBulkAction(t("users.bulkReset")),
             disabled: !canAccess(role, "users:reset"),
             disabledReason: t("ui.permissionDenied"),
           },
@@ -131,9 +137,9 @@ export default function UsersPage() {
         }}
         onFilterChange={(key, value) => {
           if (key === "userId") setSearchValue(value);
-          if (key === "appId") setSelectedApp(value ? value : null);
-          if (key === "group") setSelectedGroup(value ? value : null);
-          if (key === "status") setSelectedStatus(value ? value : null);
+          if (key === "appId") setSelectedApp(value ?? null);
+          if (key === "group") setSelectedGroup(value ?? null);
+          if (key === "status") setSelectedStatus(value ?? null);
         }}
         filters={[
           {

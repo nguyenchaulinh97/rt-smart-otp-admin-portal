@@ -22,8 +22,8 @@ export default function TopBar({
     localStorage.removeItem("auth:loggedIn");
     localStorage.removeItem("auth:token");
     try {
-      window.dispatchEvent(new Event("auth:state-change"));
-      window.dispatchEvent(new Event("storage"));
+      globalThis.dispatchEvent(new Event("auth:state-change"));
+      globalThis.dispatchEvent(new Event("storage"));
     } catch {
       // ignore
     }
@@ -54,7 +54,7 @@ export default function TopBar({
       </div>
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 text-xs text-slate-500">
-          <Tooltip title={locale === "en" ? "Change language" : "Đổi ngôn ngữ"}>
+          <Tooltip title={t("ui.changeLanguage")}>
             <Select
               value={locale}
               onChange={(value) => setLocale(value as "en" | "vi")}
@@ -81,21 +81,17 @@ export default function TopBar({
             />
           </Tooltip>
         </label>
-        <Tooltip title={locale === "en" ? "Change theme" : "Đổi theme"}>
+        <Tooltip title={t("ui.changeTheme")}>
           <Button
             type="text"
             onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+            aria-label={theme === "dark" ? t("ui.switchToLight") : t("ui.switchToDark")}
           >
             {theme === "dark" ? <SunOutlined /> : <MoonOutlined />}
           </Button>
         </Tooltip>
-        <Tooltip title={locale === "en" ? "Sign Out" : "Đăng xuất"}>
-          <Button
-            type="text"
-            onClick={handleLogout}
-            aria-label={locale === "en" ? "Sign Out" : "Đăng xuất"}
-          >
+        <Tooltip title={t("ui.signOut")}>
+          <Button type="text" onClick={handleLogout} aria-label={t("ui.signOut")}>
             <LogoutOutlined />
           </Button>
         </Tooltip>
