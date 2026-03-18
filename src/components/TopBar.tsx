@@ -9,14 +9,21 @@ import { usePathname, useRouter } from "next/navigation";
 export default function TopBar({
   onOpenMobile,
   onToggleSidebar,
-}: {
+}: Readonly<{
   onOpenMobile?: () => void;
   onToggleSidebar?: () => void;
-}) {
+}>) {
   const { locale, setLocale, t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+
+  const resolveLabel = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
+  const switchToDarkLabel = resolveLabel("ui.switchToDark", "Switch to dark theme");
+  const switchToLightLabel = resolveLabel("ui.switchToLight", "Switch to light theme");
 
   const handleLogout = () => {
     localStorage.removeItem("auth:loggedIn");
@@ -32,8 +39,8 @@ export default function TopBar({
 
   const section = (() => {
     if (!pathname || pathname === "/") return "dashboard";
-    const parts = pathname.split("/").filter(Boolean);
-    return parts[0] || "dashboard";
+    const first = pathname.split("/").find(Boolean);
+    return first || "dashboard";
   })();
 
   const headerTitle = t(`${section}.title`) || t("app.headerTitle");
@@ -85,7 +92,7 @@ export default function TopBar({
           <Button
             type="text"
             onClick={toggleTheme}
-            aria-label={theme === "dark" ? t("ui.switchToLight") : t("ui.switchToDark")}
+            aria-label={theme === "dark" ? switchToLightLabel : switchToDarkLabel}
           >
             {theme === "dark" ? <SunOutlined /> : <MoonOutlined />}
           </Button>

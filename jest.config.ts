@@ -1,6 +1,6 @@
-import type { InitialOptionsTsJest } from "ts-jest";
+import type { Config } from "jest";
 
-const config: InitialOptionsTsJest = {
+const config: Config = {
   preset: "ts-jest",
   testEnvironment: "jsdom",
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],

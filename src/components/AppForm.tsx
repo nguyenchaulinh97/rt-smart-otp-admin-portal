@@ -11,7 +11,7 @@ export type AppFormValues = {
   status: "Active" | "Paused";
 };
 
-type AppFormProps = {
+type AppFormProps = Readonly<{
   title: string;
   initialValues: AppFormValues;
   policyOptions: string[];
@@ -20,7 +20,7 @@ type AppFormProps = {
   disableId?: boolean;
   isReadOnly?: boolean;
   disabledReason?: string;
-};
+}>;
 
 export default function AppForm({
   title,

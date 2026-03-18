@@ -49,6 +49,18 @@ const normalizeList = <T>(input: unknown): T[] => {
   return [];
 };
 
+const normalizeRecord = <T>(input: unknown): T | null => {
+  if (!input) return null;
+  if (Array.isArray(input)) return (input[0] as T | undefined) ?? null;
+  if (typeof input !== "object") return null;
+  const candidateKeys = ["data", "result", "item", "user", "payload"];
+  for (const key of candidateKeys) {
+    const value = (input as Record<string, unknown>)[key];
+    if (value && typeof value === "object") return value as T;
+  }
+  return input as T;
+};
+
 const toText = (value: unknown) => (value === undefined || value === null ? "" : String(value));
 
 const toResult = (value: unknown): "SUCCESS" | "FAIL" => {
@@ -74,13 +86,58 @@ const mapTokenEventToVerifyLog = (row: TokenEventPayload): ApiVerifyLog => ({
 export const otpService = {
   getUsers: async () => {
     if (isMockEnabled()) return (await mockApi.getUsers()).data;
-    const data = await request<ApiUser[]>(endpoints.users());
-    return data.map(mapUser);
+    const data = await request<unknown>(endpoints.users());
+    return normalizeList<ApiUser>(data).map(mapUser);
   },
   getUser: async (id: string) => {
     if (isMockEnabled()) return (await mockApi.getUser(id)).data;
-    const data = await request<ApiUser | null>(endpoints.user(id));
-    return data ? mapUser(data) : null;
+    const data = await request<unknown>(endpoints.user(id));
+    const record = normalizeRecord<ApiUser>(data);
+    return record ? mapUser(record) : null;
+  },
+  createUser: async (payload: {
+    user_id: string;
+    cif: string;
+    username: string;
+    email: string;
+    name: string;
+  }) => {
+    if (isMockEnabled()) return (await mockApi.createUser(payload)).data;
+    return request<ApiUser>(endpoints.users(), {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  lockUser: async (id: string) => {
+    if (isMockEnabled()) return (await mockApi.lockUser(id)).data;
+    return request<void>(endpoints.userLock(id), { method: "PUT" });
+  },
+  unlockUser: async (id: string) => {
+    if (isMockEnabled()) return (await mockApi.unlockUser(id)).data;
+    return request<void>(endpoints.userUnlock(id), { method: "PUT" });
+  },
+  deleteUser: async (id: string) => {
+    if (isMockEnabled()) return (await mockApi.deleteUser(id)).data;
+    return request<void>(endpoints.user(id), { method: "DELETE" });
+  },
+  updateUserType: async (id: string, type: string) => {
+    if (isMockEnabled()) return (await mockApi.updateUserType(id, type)).data;
+    return request<void>(endpoints.userType(id), {
+      method: "PUT",
+      body: JSON.stringify({ type }),
+    });
+  },
+  getUserSessions: async (id: string) => {
+    if (isMockEnabled()) return (await mockApi.getUserSessions(id)).data;
+    const data = await request<unknown>(endpoints.userSessions(id));
+    return normalizeList<Record<string, unknown>>(data);
+  },
+  bulkUserAction: async (action: "lock" | "unlock" | "reset", userIds: string[]) => {
+    if (isMockEnabled()) return (await mockApi.bulkUserAction(action, userIds)).data;
+    return request<void>(endpoints.usersBulkAction(), {
+      method: "POST",
+      body: JSON.stringify({ action, user_ids: userIds }),
+    });
   },
   getApps: async () => {
     if (isMockEnabled()) return (await mockApi.getApps()).data;

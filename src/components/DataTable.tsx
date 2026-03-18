@@ -30,7 +30,7 @@ export type BulkAction = {
   disabledReason?: string;
 };
 
-type DataTableProps<T> = {
+type DataTableProps<T> = Readonly<{
   title: string;
   description?: string;
   ctaLabel?: string;
@@ -54,7 +54,7 @@ type DataTableProps<T> = {
   enableSelection?: boolean;
   getRowId?: (row: T) => string;
   bulkActions?: BulkAction[];
-};
+}>;
 
 export default function DataTable<T>({
   title,
@@ -136,7 +136,20 @@ export default function DataTable<T>({
       recordAny.appId ??
       recordAny.deviceId;
     if (candidate !== undefined && candidate !== null) {
-      return String(candidate);
+      if (typeof candidate === "string") return candidate;
+      if (
+        typeof candidate === "number" ||
+        typeof candidate === "boolean" ||
+        typeof candidate === "bigint"
+      ) {
+        return String(candidate);
+      }
+      if (typeof candidate === "symbol") return candidate.toString();
+      try {
+        return JSON.stringify(candidate);
+      } catch {
+        return Object.prototype.toString.call(candidate);
+      }
     }
     try {
       return JSON.stringify(record);
@@ -167,14 +180,14 @@ export default function DataTable<T>({
     });
   };
 
+  const resolveSortOrder = (columnKey: string): SortOrder | undefined => {
+    if (sortState?.key !== columnKey) return undefined;
+    return sortState.direction === "asc" ? "ascend" : "descend";
+  };
+
   const tableColumns: ColumnsType<T> = columns.map((column) => {
     const sortable = Boolean(column.sortValue);
-    const sortOrder: SortOrder | undefined =
-      sortState?.key === column.key
-        ? sortState.direction === "asc"
-          ? "ascend"
-          : "descend"
-        : undefined;
+    const sortOrder = resolveSortOrder(column.key);
     return {
       key: column.key,
       dataIndex: column.key,
@@ -203,7 +216,7 @@ export default function DataTable<T>({
         <div className="flex items-center gap-2">
           {enableSearch ? (
             <Input
-              value={searchValue === undefined ? undefined : searchValue}
+              value={searchValue ?? undefined}
               placeholder={searchPlaceholder ?? t("table.search")}
               onChange={(event) => onSearchChange?.(event.target.value)}
               size="middle"
@@ -228,9 +241,7 @@ export default function DataTable<T>({
               {filter.type === "select" ? (
                 <Select
                   id={filter.key}
-                  value={
-                    filterValues && filterValues[filter.key] ? filterValues[filter.key] : undefined
-                  }
+                  value={filterValues?.[filter.key] ?? undefined}
                   placeholder={filter.placeholder ?? t("table.all")}
                   allowClear
                   options={filter.options}
@@ -323,13 +334,13 @@ export default function DataTable<T>({
           loading={isLoading}
           scroll={{ x: "max-content" }}
           onChange={(pagination, _filters, sorter) => {
-            if (pagination && typeof (pagination as { current?: unknown }).current === "number") {
-              setCurrentPage((pagination as { current?: number }).current ?? 1);
+            if (typeof pagination?.current === "number") {
+              setCurrentPage(pagination.current ?? 1);
             }
-            if (pagination && typeof (pagination as { pageSize?: unknown }).pageSize === "number") {
-              setLocalPageSize((pagination as { pageSize?: number }).pageSize ?? localPageSize);
+            if (typeof pagination?.pageSize === "number") {
+              setLocalPageSize(pagination.pageSize ?? localPageSize);
             }
-            handleSortChange(sorter as SorterResult<T> | SorterResult<T>[]);
+            handleSortChange(sorter);
           }}
           locale={{
             emptyText: errorMessage ? (
@@ -349,7 +360,7 @@ export default function DataTable<T>({
             canSelect
               ? {
                   selectedRowKeys: selectedIds,
-                  onChange: (keys) => setSelectedIds(keys as string[]),
+                  onChange: (keys) => setSelectedIds(keys.map(String)),
                 }
               : undefined
           }

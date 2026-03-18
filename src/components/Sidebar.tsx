@@ -56,9 +56,9 @@ export default function Sidebar({
 
   // support controlled collapsed prop; otherwise use internal state persisted to localStorage
   const [internalCollapsed, setInternalCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
+    if (!globalThis.window) return false;
     try {
-      return localStorage.getItem("ui:sidebar-collapsed") === "true";
+      return globalThis.localStorage.getItem("ui:sidebar-collapsed") === "true";
     } catch {
       return false;
     }
@@ -66,7 +66,7 @@ export default function Sidebar({
 
   useEffect(() => {
     try {
-      localStorage.setItem(
+      globalThis.localStorage.setItem(
         "ui:sidebar-collapsed",
         (collapsedProp ?? internalCollapsed) ? "true" : "false",
       );

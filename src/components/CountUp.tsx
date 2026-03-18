@@ -2,18 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type CountUpProps = {
+type CountUpProps = Readonly<{
   end: number | string;
   duration?: number; // ms
   format?: (v: number | string) => string | number;
-};
+}>;
 
 export default function CountUp({ end, duration = 800, format }: CountUpProps) {
-  const [value, setValue] = useState<number>(typeof end === "number" ? 0 : 0);
+  const [value, setValue] = useState<number>(0);
   const rafRef = useRef<number | null>(null);
   const startRef = useRef<number | null>(null);
   const startValue = 0;
-  const target = typeof end === "number" ? end : Number(String(end).replace(/,/g, "")) || 0;
+  const target = typeof end === "number" ? end : Number(String(end).replaceAll(",", "")) || 0;
 
   useEffect(() => {
     const id = setTimeout(() => setValue(startValue), 0);

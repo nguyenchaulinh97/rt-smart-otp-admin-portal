@@ -17,7 +17,7 @@ import {
   type VerifyLogRecord,
 } from "@/mock/api";
 import { otpService } from "@/services/otpService";
-import { formatDate, formatDateTime, getStatusLabel } from "@/utils/formatters";
+import { formatDateTime, getStatusLabel } from "@/utils/formatters";
 import { Button, Card, Descriptions, Tooltip, Typography } from "antd";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -32,8 +32,8 @@ export default function UserDetailPage() {
   const toast = useToast();
   const { role } = useRole();
   const tabParam = searchParams.get("tab");
-  const activeTab = "profile,tokens,devices,activity".split(",").includes(tabParam ?? "")
-    ? (tabParam as "profile" | "tokens" | "devices" | "activity")
+  const activeTab = "profile,tokens,devices,activity,sessions".split(",").includes(tabParam ?? "")
+    ? (tabParam as "profile" | "tokens" | "devices" | "activity" | "sessions")
     : "profile";
   const { data, isLoading, error, refetch } = useMockQuery<UserRecord | null>(() =>
     otpService.getUser(String(id)),
@@ -42,6 +42,9 @@ export default function UserDetailPage() {
   const { data: logData } = useMockQuery<AuditLogRecord[]>(() => otpService.getAuditLogs());
   const { data: deviceData } = useMockQuery<DeviceRecord[]>(() => otpService.getDevices());
   const { data: verifyData } = useMockQuery<VerifyLogRecord[]>(() => otpService.getVerifyLogs());
+  const { data: sessionData } = useMockQuery<Record<string, unknown>[]>(() =>
+    otpService.getUserSessions(String(id)),
+  );
 
   const userTokens = useMemo(() => {
     const tokens = (tokenData ?? []).filter((token) => token.userId === data?.id);
@@ -92,6 +95,12 @@ export default function UserDetailPage() {
   const permissionDenied = t("ui.permissionDenied");
   const canEditUser = canAccess(role, "users:edit");
   const editDisabled = !canEditUser;
+  const canLock = canAccess(role, "users:lock");
+  const canUnlock = canAccess(role, "users:unlock");
+  const isLocked = data.status === "Locked";
+  const canToggleLock = isLocked ? canUnlock : canLock;
+  const lockActionLabel = isLocked ? t("users.actionUnlock") : t("users.actionLock");
+  const lockConfirmMessage = isLocked ? t("users.confirmUnlock") : t("users.confirmLock");
 
   return (
     <div className="space-y-6">
@@ -113,6 +122,35 @@ export default function UserDetailPage() {
           >
             {t("users.editTitle")}
           </Button>
+          {data.status ? (
+            <Tooltip title={!canToggleLock ? permissionDenied : undefined}>
+              <span>
+                <Button
+                  type="default"
+                  size="small"
+                  danger={!isLocked}
+                  disabled={!canToggleLock}
+                  onClick={async () => {
+                    const accepted = await confirm({
+                      title: t("ui.confirmTitle"),
+                      message: lockConfirmMessage,
+                      confirmLabel: t("ui.confirm"),
+                    });
+                    if (!accepted) return;
+                    if (isLocked) {
+                      await otpService.unlockUser(data.id);
+                    } else {
+                      await otpService.lockUser(data.id);
+                    }
+                    toast({ variant: "success", message: t("ui.toastSaved") });
+                    refetch();
+                  }}
+                >
+                  {lockActionLabel}
+                </Button>
+              </span>
+            </Tooltip>
+          ) : null}
           <Link href="/users" className="text-xs font-semibold text-slate-700 hover:text-slate-900">
             ← {t("breadcrumbs.users")}
           </Link>
@@ -125,6 +163,7 @@ export default function UserDetailPage() {
           { key: "tokens", label: t("users.tabTokens") },
           { key: "devices", label: t("users.tabDevices") },
           { key: "activity", label: t("users.tabActivity") },
+          { key: "sessions", label: t("users.tabSessions") },
         ].map((tab) => (
           <Button
             key={tab.key}
@@ -146,22 +185,27 @@ export default function UserDetailPage() {
             size="small"
             column={{ xs: 1, sm: 2, lg: 3 }}
             items={[
-              { key: "group", label: t("users.group"), children: data.group },
+              { key: "username", label: t("users.username"), children: data.username },
               {
                 key: "status",
                 label: t("users.status"),
-                children: getStatusLabel(data.status, t),
+                children: data.status ? getStatusLabel(data.status, t) : t("table.empty"),
               },
               {
-                key: "createdAt",
-                label: t("logs.createdAt"),
-                children: formatDate(data.createdAt, locale),
+                key: "name",
+                label: t("users.name"),
+                children: data.name,
               },
-              { key: "app", label: t("users.app"), children: data.appId },
               {
-                key: "lastActivity",
-                label: t("users.lastActivity"),
-                children: data.lastActivity,
+                key: "email",
+                label: t("users.email"),
+                children: data.email,
+              },
+              { key: "cif", label: t("users.cif"), children: data.cif },
+              {
+                key: "type",
+                label: t("users.type"),
+                children: data.type ?? t("table.empty"),
                 span: 2,
               },
             ]}
@@ -392,6 +436,59 @@ export default function UserDetailPage() {
               )}
             </Card>
           </div>
+        </Card>
+      )}
+
+      {activeTab === "sessions" && (
+        <Card title={t("users.tabSessions")}>
+          {(sessionData ?? []).length === 0 ? (
+            <Typography.Text type="secondary">{t("table.empty")}</Typography.Text>
+          ) : (
+            <div className="space-y-2">
+              {(sessionData ?? []).map((session, index) => {
+                const idLabel =
+                  (session.id as string | undefined) ??
+                  (session.session_id as string | undefined) ??
+                  `#${index + 1}`;
+                const createdAt =
+                  (session.created_at as string | undefined) ??
+                  (session.createdAt as string | undefined);
+                const ip =
+                  (session.ip as string | undefined) ??
+                  (session.ip_address as string | undefined);
+                const userAgent =
+                  (session.user_agent as string | undefined) ??
+                  (session.userAgent as string | undefined);
+                return (
+                  <div
+                    key={`${idLabel}-${index}`}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-100 px-3 py-2"
+                  >
+                    <div>
+                      <Typography.Text className="font-medium">{idLabel}</Typography.Text>
+                      {userAgent ? (
+                        <Typography.Text type="secondary" className="block text-xs">
+                          {userAgent}
+                        </Typography.Text>
+                      ) : null}
+                    </div>
+                    <div className="text-right">
+                      {createdAt ? (
+                        <Typography.Text type="secondary" className="block text-xs">
+                          {createdAt}
+                        </Typography.Text>
+                      ) : null}
+                      {ip ? (
+                        <Typography.Text type="secondary" className="block text-xs">
+                          {ip}
+                        </Typography.Text>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
       )}
     </div>
