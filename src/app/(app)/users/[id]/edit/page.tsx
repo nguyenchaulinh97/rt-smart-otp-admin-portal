@@ -43,7 +43,8 @@ export default function UserEditPage() {
     return <div className="text-sm text-slate-500">{t("table.empty")}</div>;
   }
 
-  const isReadOnly = !canAccess(role, "users:edit");
+  const canEditUser = canAccess(role, "users:edit");
+  const isReadOnly = !canEditUser;
 
   return (
     <UserForm
