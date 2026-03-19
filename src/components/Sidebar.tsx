@@ -15,7 +15,7 @@ import {
   SwapOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Button, Layout, Menu, Typography } from "antd";
+import { Button, Layout, Menu, Tag, Typography } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -27,22 +27,49 @@ type SidebarProps = {
   onCollapse?: (collapsed: boolean) => void;
 };
 
-const defaultItems = (t: (k: string) => string) => [
-  { label: t("nav.dashboard"), href: "/", icon: <DashboardOutlined /> },
-  { label: t("nav.admins"), href: "/admins", icon: <UserOutlined /> },
-  { label: t("nav.applications"), href: "/applications", icon: <AppstoreOutlined /> },
-  { label: t("nav.users"), href: "/users", icon: <UserOutlined /> },
-  { label: t("nav.apps"), href: "/apps", icon: <AppstoreOutlined /> },
-  { label: t("nav.tokens"), href: "/tokens", icon: <QrcodeOutlined /> },
-  { label: t("nav.transactions"), href: "/transactions", icon: <SwapOutlined /> },
-  { label: t("nav.devices"), href: "/devices", icon: <MobileOutlined /> },
-  { label: t("nav.policies"), href: "/policies", icon: <SafetyOutlined /> },
-  { label: t("nav.verifications"), href: "/verifications", icon: <SafetyCertificateOutlined /> },
-  { label: t("nav.health"), href: "/health", icon: <HeartOutlined /> },
-  { label: t("nav.risk"), href: "/risk", icon: <AuditOutlined /> },
-  { label: t("nav.auditAdvanced"), href: "/audit-advanced", icon: <AuditOutlined /> },
-  { label: t("nav.logs"), href: "/logs", icon: <FileTextOutlined /> },
-];
+const DEMO_HREFS = new Set([
+  "/",
+  "/tokens",
+  "/transactions",
+  "/devices",
+  "/policies",
+  "/verifications",
+  "/health",
+  "/risk",
+  "/audit-advanced",
+]);
+
+const withDemoTag = (label: string, enabled: boolean) =>
+  enabled ? (
+    <span className="inline-flex items-center gap-2">
+      <span>{label}</span>
+      <Tag color="gold" style={{ marginInlineEnd: 0 }}>
+        Demo
+      </Tag>
+    </span>
+  ) : (
+    label
+  );
+
+const defaultItems = (t: (k: string) => string) =>
+  [
+    { label: t("nav.dashboard"), href: "/", icon: <DashboardOutlined /> },
+    { label: t("nav.admins"), href: "/admins", icon: <UserOutlined /> },
+    { label: t("nav.applications"), href: "/applications", icon: <AppstoreOutlined /> },
+    { label: t("nav.users"), href: "/users", icon: <UserOutlined /> },
+    { label: t("nav.tokens"), href: "/tokens", icon: <QrcodeOutlined /> },
+    { label: t("nav.transactions"), href: "/transactions", icon: <SwapOutlined /> },
+    { label: t("nav.devices"), href: "/devices", icon: <MobileOutlined /> },
+    { label: t("nav.policies"), href: "/policies", icon: <SafetyOutlined /> },
+    { label: t("nav.verifications"), href: "/verifications", icon: <SafetyCertificateOutlined /> },
+    { label: t("nav.health"), href: "/health", icon: <HeartOutlined /> },
+    { label: t("nav.risk"), href: "/risk", icon: <AuditOutlined /> },
+    { label: t("nav.auditAdvanced"), href: "/audit-advanced", icon: <AuditOutlined /> },
+    { label: t("nav.logs"), href: "/logs", icon: <FileTextOutlined /> },
+  ].map((item) => ({
+    ...item,
+    label: withDemoTag(item.label, DEMO_HREFS.has(item.href)),
+  }));
 
 export default function Sidebar({
   plain,

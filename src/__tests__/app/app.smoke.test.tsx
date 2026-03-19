@@ -64,6 +64,7 @@ jest.mock("antd", () => {
       ))}
     </select>
   );
+  const Tag = ({ children }: any) => <span>{children}</span>;
   const Checkbox = ({ children }: any) => <label>{children}</label>;
   const Switch = ({ checked, onChange }: any) => (
     <input
@@ -160,6 +161,7 @@ jest.mock("antd", () => {
     Button,
     Input,
     Select,
+    Tag,
     Checkbox,
     Switch,
     Tooltip,
@@ -356,10 +358,6 @@ describe("app smoke render", () => {
     "@/app/(app)/layout",
     "@/app/(app)/page",
     "@/app/(app)/admin/profile/page",
-    "@/app/(app)/apps/page",
-    "@/app/(app)/apps/new/page",
-    "@/app/(app)/apps/[id]/page",
-    "@/app/(app)/apps/[id]/edit/page",
     "@/app/(app)/audit-advanced/page",
     "@/app/(app)/devices/page",
     "@/app/(app)/devices/[id]/page",
@@ -431,10 +429,6 @@ describe("app smoke render", () => {
   });
 
   const queryDrivenPages = [
-    "@/app/(app)/apps/page",
-    "@/app/(app)/apps/new/page",
-    "@/app/(app)/apps/[id]/page",
-    "@/app/(app)/apps/[id]/edit/page",
     "@/app/(app)/devices/page",
     "@/app/(app)/devices/[id]/page",
     "@/app/(app)/logs/page",

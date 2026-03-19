@@ -15,7 +15,7 @@
   "nav": {
     "dashboard": "Tổng quan",
     "admins": "Admin",
-    "applications": "Ứng dụng (API)",
+    "applications": "Ứng dụng",
     "users": "Người dùng",
     "apps": "Ứng dụng",
     "tokens": "Token",

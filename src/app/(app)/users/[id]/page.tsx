@@ -206,7 +206,7 @@ export default function UserDetailPage() {
                 key: "type",
                 label: t("users.type"),
                 children: data.type ?? t("table.empty"),
-                span: 2,
+                span: { xs: 1, sm: 2, lg: 1 },
               },
             ]}
           />
