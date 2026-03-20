@@ -24,15 +24,15 @@ export default function LoginPage() {
       await login(values.username, values.password);
       try {
         localStorage.setItem("auth:loggedIn", "true");
-        window.dispatchEvent(new Event("auth:state-change"));
-        window.dispatchEvent(new Event("storage"));
+        globalThis.dispatchEvent(new Event("auth:state-change"));
+        globalThis.dispatchEvent(new Event("storage"));
       } catch {
         // ignore
       }
       router.replace("/");
     } catch (err: any) {
       // fallback in case navigation fails
-      toast({ message: err?.message || "Login failed", variant: "error" });
+      toast({ message: err?.message || t("login.error"), variant: "error" });
     }
   };
 

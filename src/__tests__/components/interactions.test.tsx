@@ -92,10 +92,6 @@ describe("components interactions", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Switch to dark theme" }));
     expect(mockToggleTheme).toHaveBeenCalled();
-
-    fireEvent.click(screen.getByRole("button", { name: "Sign Out" }));
-    expect(localStorage.getItem("auth:loggedIn")).toBeNull();
-    expect(mockRouter.replace).toHaveBeenCalledWith("/login");
   });
 
   it("TopBar resolves dashboard title when pathname is empty", () => {

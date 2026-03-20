@@ -70,8 +70,8 @@ export default function PoliciesPage() {
         }}
         onFilterChange={(key, value) => {
           if (key === "name") setSearchValue(value);
-          if (key === "type") setSelectedType(value ? value : null);
-          if (key === "status") setSelectedStatus(value ? value : null);
+          if (key === "type") setSelectedType(value ?? null);
+          if (key === "status") setSelectedStatus(value ?? null);
         }}
         filters={[
           {

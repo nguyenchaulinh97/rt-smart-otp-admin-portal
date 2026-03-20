@@ -16,26 +16,81 @@ export const normalizeToken = (value: string | null) => {
   return trimmed;
 };
 
-export const request = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
-  const url = buildUrl(path);
-  const headers = {
-    "Content-Type": "application/json",
-    ...(options.headers || {}),
-  } as Record<string, string>;
+const clearStoredToken = () => {
+  if (!globalThis.window) return;
+  try {
+    globalThis.localStorage.removeItem("auth:token");
+  } catch {
+    // ignore
+  }
+};
 
-  if (!headers.Authorization && typeof window !== "undefined") {
-    const raw = localStorage.getItem("auth:token");
+const getStoredToken = () => {
+  if (!globalThis.window) return null;
+  try {
+    const raw = globalThis.localStorage.getItem("auth:token");
     const token = normalizeToken(raw);
+    if (!token && raw) clearStoredToken();
+    return token;
+  } catch {
+    return null;
+  }
+};
+
+const headersToRecord = (optionsHeaders?: HeadersInit): Record<string, string> => {
+  const record: Record<string, string> = {};
+  if (!optionsHeaders) return record;
+  if (optionsHeaders instanceof Headers) {
+    optionsHeaders.forEach((value, key) => {
+      record[key] = value;
+    });
+    return record;
+  }
+  if (Array.isArray(optionsHeaders)) {
+    optionsHeaders.forEach(([key, value]) => {
+      record[key] = String(value);
+    });
+    return record;
+  }
+  Object.entries(optionsHeaders).forEach(([key, value]) => {
+    if (value !== undefined) record[key] = String(value);
+  });
+  return record;
+};
+
+const buildHeaders = (optionsHeaders?: HeadersInit) => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...headersToRecord(optionsHeaders),
+  };
+  if (!headers.Authorization) {
+    const token = getStoredToken();
     if (token) {
       headers.Authorization = `Bearer ${token}`;
-    } else if (raw) {
-      try {
-        localStorage.removeItem("auth:token");
-      } catch {
-        // ignore
-      }
     }
   }
+  return headers;
+};
+
+const parseResponseBody = async (response: Response) => {
+  const text = await response.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return text;
+  }
+};
+
+const extractErrorMessage = (data: unknown) => {
+  if (!data || typeof data !== "object") return undefined;
+  const maybe = data as { message?: unknown; error?: unknown };
+  return maybe.message ?? maybe.error;
+};
+
+export const request = async <T>(path: string, options?: RequestInit): Promise<T> => {
+  const url = buildUrl(path);
+  const headers = buildHeaders(options?.headers);
 
   const response = await fetch(url, {
     ...options,
@@ -43,25 +98,17 @@ export const request = async <T>(path: string, options: RequestInit = {}): Promi
     credentials: "include",
   });
 
-  const text = await response.text();
-  let data: unknown = null;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = text;
-  }
+  const data = await parseResponseBody(response);
 
   if (!response.ok) {
-    const messageFromBody =
-      data && typeof data === "object"
-        ? ((data as { message?: unknown; error?: unknown }).message ??
-          (data as { message?: unknown; error?: unknown }).error)
-        : undefined;
-    const err = new Error(
-      typeof messageFromBody === "string" && messageFromBody.trim()
-        ? messageFromBody
-        : `Request failed: ${response.status}`,
-    );
+    const messageFromBody = extractErrorMessage(data);
+    if (typeof messageFromBody !== "string" || !messageFromBody.trim()) {
+      const err = new Error(`Request failed: ${response.status}`);
+      (err as Error & { status?: number; data?: unknown }).status = response.status;
+      (err as Error & { status?: number; data?: unknown }).data = data;
+      throw err;
+    }
+    const err = new Error(messageFromBody);
     (err as Error & { status?: number; data?: unknown }).status = response.status;
     (err as Error & { status?: number; data?: unknown }).data = data;
     throw err;

@@ -95,7 +95,7 @@ export default function DeviceDetailPage() {
             {
               key: "app",
               label: t("devices.app"),
-              children: <Link href={`/apps/${data.appId}`}>{data.appId}</Link>,
+              children: <Link href={`/applications/${data.appId}`}>{data.appId}</Link>,
             },
             { key: "status", label: t("devices.status"), children: getStatusLabel(data.status, t) },
             { key: "lastSeen", label: t("devices.lastSeen"), children: data.lastSeen },

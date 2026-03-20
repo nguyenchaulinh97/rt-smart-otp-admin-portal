@@ -71,9 +71,9 @@ export default function TransactionsPage() {
         }}
         onFilterChange={(key, value) => {
           if (key === "transactionId") setSearchValue(value);
-          if (key === "userId") setSelectedUser(value ? value : null);
-          if (key === "deviceId") setSelectedDevice(value ? value : null);
-          if (key === "status") setSelectedStatus(value ? value : null);
+          if (key === "userId") setSelectedUser(value ?? null);
+          if (key === "deviceId") setSelectedDevice(value ?? null);
+          if (key === "status") setSelectedStatus(value ?? null);
         }}
         filters={[
           {

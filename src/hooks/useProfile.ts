@@ -11,8 +11,10 @@ export type AdminProfile = {
 };
 
 export function useProfile() {
-  const token =
-    typeof window !== "undefined" ? normalizeToken(localStorage.getItem("auth:token")) : undefined;
+  const token = (() => {
+    if (!globalThis.window) return undefined;
+    return normalizeToken(globalThis.localStorage.getItem("auth:token"));
+  })();
   const { data, isLoading, error, refetch } = useApiQuery<AdminProfile | null>(
     ["admin-profile"],
     "/admin/profile",

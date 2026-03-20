@@ -141,6 +141,13 @@ npm run lint
 - Khi `NEXT_PUBLIC_OTP_API_BASE` trống: dữ liệu lấy từ `src/mock`.
 - Khi có base URL: gọi API thật qua `src/services`.
 
+## Spell checker (Code Spell Checker / cSpell)
+
+- File cấu hình: [`cspell.json`](cspell.json) — bật từ điển **tiếng Việt** (`@cspell/dict-vi-vn`) cùng tiếng Anh để comment/string tiếng Việt không bị gạch đỏ sai.
+- VS Code / Cursor: đã set `cSpell.language`: `en,vi` trong [`.vscode/settings.json`](.vscode/settings.json).
+- Sau khi clone: chạy `pnpm install` để cài package `@cspell/dict-vi-vn`.
+- Từ thuật ngữ riêng (ví dụ `totp`, `otpauth`) nằm trong `cspell.json` → `words`; có thể bổ sung thêm khi cần.
+
 ## Ghi chú
 
 - Mock data dùng mặc định; service API-ready nằm ở `src/services`.

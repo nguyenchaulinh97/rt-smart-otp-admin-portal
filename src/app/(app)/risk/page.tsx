@@ -90,8 +90,8 @@ export default function RiskPage() {
         }}
         onFilterChange={(key, value) => {
           if (key === "userId") setSearchValue(value);
-          if (key === "type") setSelectedType(value ? value : null);
-          if (key === "action") setSelectedAction(value ? value : null);
+          if (key === "type") setSelectedType(value ?? null);
+          if (key === "action") setSelectedAction(value ?? null);
         }}
         filters={[
           { key: "userId", label: t("risk.filterUser"), placeholder: t("placeholders.userId") },

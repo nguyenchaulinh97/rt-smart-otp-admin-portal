@@ -35,7 +35,7 @@ export default function DevicesPage() {
   } = useMockQuery<DeviceRow[]>(() => otpService.getDevices());
   const rows = data ?? [];
   const resolvedLoading = isFetching;
-  const resolvedError = isError ? t("table.error") : error ? t("table.error") : undefined;
+  const resolvedError = isError || error ? t("table.error") : undefined;
   const handleRowAction = async (message: string) => {
     const accepted = await confirm({
       title: t("ui.confirmTitle"),
@@ -74,10 +74,10 @@ export default function DevicesPage() {
         }}
         onFilterChange={(key, value) => {
           if (key === "deviceId") setSearchValue(value);
-          if (key === "userId") setSelectedUser(value ? value : null);
-          if (key === "appId") setSelectedApp(value ? value : null);
-          if (key === "platform") setSelectedPlatform(value ? value : null);
-          if (key === "status") setSelectedStatus(value ? value : null);
+          if (key === "userId") setSelectedUser(value ?? null);
+          if (key === "appId") setSelectedApp(value ?? null);
+          if (key === "platform") setSelectedPlatform(value ?? null);
+          if (key === "status") setSelectedStatus(value ?? null);
         }}
         filters={[
           {
@@ -156,39 +156,42 @@ export default function DevicesPage() {
           {
             key: "actions",
             header: t("devices.actions"),
-            render: () => (
-              <div className="flex flex-wrap items-center gap-2">
-                <Tooltip
-                  title={!canAccess(role, "devices:block") ? t("ui.permissionDenied") : undefined}
-                >
-                  <span>
-                    <Button
-                      type="default"
-                      size="small"
-                      danger
-                      disabled={!canAccess(role, "devices:block")}
-                      onClick={() => handleRowAction(t("devices.confirmBlock"))}
-                    >
-                      {t("devices.actionBlock")}
-                    </Button>
-                  </span>
-                </Tooltip>
-                <Tooltip
-                  title={!canAccess(role, "devices:unbind") ? t("ui.permissionDenied") : undefined}
-                >
-                  <span>
-                    <Button
-                      type="default"
-                      size="small"
-                      disabled={!canAccess(role, "devices:unbind")}
-                      onClick={() => handleRowAction(t("devices.confirmUnbind"))}
-                    >
-                      {t("devices.actionUnbind")}
-                    </Button>
-                  </span>
-                </Tooltip>
-              </div>
-            ),
+            render: () => {
+              const canBlock = canAccess(role, "devices:block");
+              const canUnbind = canAccess(role, "devices:unbind");
+              const permissionDenied = t("ui.permissionDenied");
+              const blockDisabled = !canBlock;
+              const unbindDisabled = !canUnbind;
+              return (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Tooltip title={blockDisabled ? permissionDenied : undefined}>
+                    <span>
+                      <Button
+                        type="default"
+                        size="small"
+                        danger
+                        disabled={blockDisabled}
+                        onClick={() => handleRowAction(t("devices.confirmBlock"))}
+                      >
+                        {t("devices.actionBlock")}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={unbindDisabled ? permissionDenied : undefined}>
+                    <span>
+                      <Button
+                        type="default"
+                        size="small"
+                        disabled={unbindDisabled}
+                        onClick={() => handleRowAction(t("devices.confirmUnbind"))}
+                      >
+                        {t("devices.actionUnbind")}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                </div>
+              );
+            },
           },
         ]}
         rows={filteredRows}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useId, useMemo, useRef } from "react";
 
 export type MockQueryState<T> = {
   data: T | null;
@@ -13,35 +14,42 @@ type MockQueryOptions = {
   shouldFail?: boolean;
 };
 
+const resolveData = <T>(response: { data: T } | T): T =>
+  typeof response === "object" && response !== null && "data" in response
+    ? (response as { data: T }).data
+    : response;
+
+const resolveErrorMessage = (error: unknown): string | null => {
+  if (!error) return null;
+  if (error instanceof Error) return error.message;
+  return "Unknown error";
+};
+
 export const useMockQuery = <T>(
   fetcher: (options?: MockQueryOptions) => Promise<{ data: T } | T>,
   options?: MockQueryOptions,
 ) => {
-  const [state, setState] = useState<MockQueryState<T>>({
-    data: null,
-    isLoading: true,
-    error: null,
+  const instanceId = useId();
+  const queryKey = useMemo(() => ["mock-query", instanceId], [instanceId]);
+  const optionsRef = useRef<MockQueryOptions | undefined>(options);
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
+
+  const query = useQuery<T, Error>({
+    queryKey,
+    queryFn: async () => resolveData(await fetcher(optionsRef.current)),
   });
 
-  const run = async (override?: MockQueryOptions) => {
-    setState({ data: null, isLoading: true, error: null });
-    try {
-      const response = await fetcher(override ?? options);
-      const resolved =
-        typeof response === "object" && response !== null && "data" in response
-          ? (response as { data: T }).data
-          : (response as T);
-      setState({ data: resolved, isLoading: false, error: null });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setState({ data: null, isLoading: false, error: message });
-    }
+  const refetch = async (override?: MockQueryOptions) => {
+    optionsRef.current = override ?? optionsRef.current;
+    return query.refetch();
   };
 
-  useEffect(() => {
-    run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return { ...state, refetch: run };
+  return {
+    data: query.data ?? null,
+    isLoading: query.isLoading,
+    error: resolveErrorMessage(query.error),
+    refetch,
+  } satisfies MockQueryState<T> & { refetch: typeof refetch };
 };

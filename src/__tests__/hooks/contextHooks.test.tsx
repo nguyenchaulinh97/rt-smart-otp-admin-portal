@@ -10,7 +10,9 @@ import { UiContext } from "@/providers/UiProvider";
 
 describe("context hooks", () => {
   it("throws when useTheme is outside provider", () => {
-    expect(() => renderHook(() => useTheme())).toThrow("useTheme must be used within ThemeProvider");
+    expect(() => renderHook(() => useTheme())).toThrow(
+      "useTheme must be used within ThemeProvider",
+    );
   });
 
   it("returns theme context value", () => {
@@ -27,7 +29,9 @@ describe("context hooks", () => {
   });
 
   it("throws when useI18n is outside provider", () => {
-    expect(() => renderHook(() => useI18n())).toThrow("useI18n must be used within LanguageProvider");
+    expect(() => renderHook(() => useI18n())).toThrow(
+      "useI18n must be used within LanguageProvider",
+    );
   });
 
   it("returns i18n context value", () => {
@@ -45,7 +49,9 @@ describe("context hooks", () => {
   });
 
   it("throws when useConfirm and useToast are outside provider", () => {
-    expect(() => renderHook(() => useConfirm())).toThrow("useConfirm must be used within UiProvider");
+    expect(() => renderHook(() => useConfirm())).toThrow(
+      "useConfirm must be used within UiProvider",
+    );
     expect(() => renderHook(() => useToast())).toThrow("useToast must be used within UiProvider");
   });
 

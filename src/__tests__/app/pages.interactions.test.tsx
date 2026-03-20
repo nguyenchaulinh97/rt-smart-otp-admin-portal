@@ -6,7 +6,6 @@ import TokensPage from "@/app/(app)/tokens/page";
 import UsersPage from "@/app/(app)/users/page";
 import VerificationsPage from "@/app/(app)/verifications/page";
 import AuditAdvancedPage from "@/app/(app)/audit-advanced/page";
-import AppsPage from "@/app/(app)/apps/page";
 import RiskPage from "@/app/(app)/risk/page";
 import TransactionsPage from "@/app/(app)/transactions/page";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -43,7 +42,6 @@ const resolveQueryKey = (fetcher: unknown) => {
   if (source.includes("getTokens")) return "tokens";
   if (source.includes("getDevices")) return "devices";
   if (source.includes("getPolicies")) return "policies";
-  if (source.includes("getApps")) return "apps";
   if (source.includes("getVerifyLogs")) return "verifyLogs";
   if (source.includes("getAuditLogs")) return "auditLogs";
   if (source.includes("getTransactions")) return "transactions";
@@ -210,10 +208,8 @@ describe("large pages interactions", () => {
     render(<UsersPage />);
     fireEvent.click(screen.getByTestId("cta-btn"));
     expect(routerPush).toHaveBeenCalledWith("/users/new");
-    fireEvent.click(screen.getByTestId("filter-appId"));
-    fireEvent.click(screen.getByTestId("filter-empty-appId"));
-    fireEvent.click(screen.getByTestId("filter-group"));
-    fireEvent.click(screen.getByTestId("filter-empty-group"));
+    fireEvent.click(screen.getByTestId("filter-userId"));
+    fireEvent.click(screen.getByTestId("filter-empty-userId"));
     fireEvent.click(screen.getByTestId("filter-status"));
     fireEvent.click(screen.getByTestId("filter-empty-status"));
 
@@ -354,52 +350,6 @@ describe("large pages interactions", () => {
     render(<PoliciesPage />);
     fireEvent.click(screen.getByTestId("retry-btn"));
     expect(refetch).toHaveBeenCalled();
-  });
-
-  it("apps page handles cta, filters, bulk actions and retry", async () => {
-    jest.useFakeTimers();
-    const refetch = jest.fn();
-    queryByKey.apps = {
-      data: [
-        { id: "broker", policy: "Standard", status: "Active", tokens: 3 },
-        { id: "wallet", policy: "Strict", status: "Locked", tokens: 4 },
-      ],
-      error: null,
-      isLoading: false,
-      refetch,
-    };
-
-    render(<AppsPage />);
-    fireEvent.click(screen.getByTestId("cta-btn"));
-    expect(routerPush).toHaveBeenCalledWith("/apps/new");
-
-    fireEvent.click(screen.getByTestId("search-change"));
-    fireEvent.click(screen.getByTestId("filter-appId"));
-    fireEvent.click(screen.getByTestId("filter-empty-appId"));
-    fireEvent.click(screen.getByTestId("filter-policy"));
-    fireEvent.click(screen.getByTestId("filter-empty-policy"));
-    fireEvent.click(screen.getByTestId("filter-status"));
-    fireEvent.click(screen.getByTestId("filter-empty-status"));
-
-    await act(async () => {
-      fireEvent.click(screen.getByTestId("bulk-pause"));
-    });
-    expect(confirmMock).toHaveBeenCalled();
-    act(() => {
-      jest.advanceTimersByTime(500);
-    });
-    await waitFor(() => expect(toastMock).toHaveBeenCalled());
-
-    confirmMock.mockResolvedValueOnce(false);
-    await act(async () => {
-      fireEvent.click(screen.getByTestId("bulk-activate"));
-    });
-
-    queryByKey.apps = { data: [], error: new Error("fail"), isLoading: false, refetch };
-    render(<AppsPage />);
-    fireEvent.click(screen.getByTestId("retry-btn"));
-    expect(refetch).toHaveBeenCalled();
-    jest.useRealTimers();
   });
 
   it("logs page handles export for verify/admin tabs", () => {

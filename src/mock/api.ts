@@ -41,6 +41,35 @@ export const mockApi = {
   getUsers: (options?: MockOptions) => withMock(() => usersFixture, options),
   getUser: (id: string, options?: MockOptions) =>
     withMock(() => usersFixture.find((user) => user.id === id) ?? null, options),
+  createUser: (
+    payload: {
+      user_id: string;
+      cif: string;
+      username: string;
+      email: string;
+      name: string;
+    },
+    options?: MockOptions,
+  ) =>
+    withMock(
+      () => ({
+        id: payload.user_id,
+        username: payload.username,
+        name: payload.name,
+        email: payload.email,
+        cif: payload.cif,
+        status: "Active" as const,
+      }),
+      options,
+    ),
+  lockUser: (_id: string, options?: MockOptions) => withMock(() => ({ success: true }), options),
+  unlockUser: (_id: string, options?: MockOptions) => withMock(() => ({ success: true }), options),
+  deleteUser: (_id: string, options?: MockOptions) => withMock(() => ({ success: true }), options),
+  updateUserType: (id: string, type: string, options?: MockOptions) =>
+    withMock(() => ({ id, type }), options),
+  getUserSessions: (_id: string, options?: MockOptions) => withMock(() => [], options),
+  bulkUserAction: (action: string, userIds: string[], options?: MockOptions) =>
+    withMock(() => ({ action, user_ids: userIds }), options),
   getApps: (options?: MockOptions) => withMock(() => appsFixture, options),
   getApp: (id: string, options?: MockOptions) =>
     withMock(() => appsFixture.find((app) => app.id === id) ?? null, options),

@@ -1,19 +1,19 @@
 "use client";
 
 import { useI18n } from "@/hooks/useI18n";
-import { Button, Form, Input, Select, Tooltip } from "antd";
+import { Button, Form, Input, Tooltip } from "antd";
 import { useState } from "react";
 
 export type UserFormValues = {
   id: string;
+  username: string;
   name: string;
   email: string;
-  appId: string;
-  group: string;
-  status: "Active" | "Locked";
+  cif: string;
+  type?: string;
 };
 
-type UserFormProps = {
+type UserFormProps = Readonly<{
   title: string;
   initialValues: UserFormValues;
   onCancel: () => void;
@@ -21,7 +21,8 @@ type UserFormProps = {
   disableId?: boolean;
   isReadOnly?: boolean;
   disabledReason?: string;
-};
+  editableFields?: Array<keyof UserFormValues>;
+}>;
 
 export default function UserForm({
   title,
@@ -31,10 +32,13 @@ export default function UserForm({
   disableId,
   isReadOnly,
   disabledReason,
+  editableFields,
 }: UserFormProps) {
   const { t } = useI18n();
   const [form] = Form.useForm<UserFormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isFieldDisabled = (field: keyof UserFormValues) =>
+    Boolean(isReadOnly || (editableFields && !editableFields.includes(field)));
 
   const handleFinish = async (vals: UserFormValues) => {
     setIsSubmitting(true);
@@ -64,14 +68,22 @@ export default function UserForm({
             label={t("users.filterUser")}
             rules={[{ required: true, min: 3, message: t("forms.minLength") }]}
           >
-            <Input disabled={disableId || isReadOnly} className="mt-2" />
+            <Input disabled={disableId || isFieldDisabled("id")} className="mt-2" />
           </Form.Item>
+          <Form.Item
+            name="username"
+            label={t("users.username")}
+            rules={[{ required: true, min: 3, message: t("forms.minLength") }]}
+          >
+            <Input disabled={isFieldDisabled("username")} className="mt-2" />
+          </Form.Item>
+
           <Form.Item
             name="name"
             label={t("users.name")}
-            rules={[{ required: true, min: 3, message: t("forms.minLength") }]}
+            rules={[{ required: true, min: 2, message: t("forms.minLength") }]}
           >
-            <Input disabled={isReadOnly} className="mt-2" />
+            <Input disabled={isFieldDisabled("name")} className="mt-2" />
           </Form.Item>
 
           <Form.Item
@@ -79,38 +91,19 @@ export default function UserForm({
             label={t("users.email")}
             rules={[{ required: true, type: "email", message: t("forms.email") }]}
           >
-            <Input type="email" disabled={isReadOnly} className="mt-2" />
+            <Input type="email" disabled={isFieldDisabled("email")} className="mt-2" />
           </Form.Item>
 
           <Form.Item
-            name="appId"
-            label={t("users.appId")}
+            name="cif"
+            label={t("users.cif")}
             rules={[{ required: true, min: 2, message: t("forms.minLength") }]}
           >
-            <Input disabled={isReadOnly} className="mt-2" />
+            <Input disabled={isFieldDisabled("cif")} className="mt-2" />
           </Form.Item>
 
-          <Form.Item
-            name="group"
-            label={t("users.group")}
-            rules={[{ required: true, min: 2, message: t("forms.minLength") }]}
-          >
-            <Input disabled={isReadOnly} className="mt-2" />
-          </Form.Item>
-
-          <Form.Item
-            name="status"
-            label={t("users.status")}
-            rules={[{ required: true, message: t("forms.required") }]}
-          >
-            <Select
-              disabled={isReadOnly}
-              className="mt-2 w-full"
-              options={[
-                { value: "Active", label: t("users.statusActive") },
-                { value: "Locked", label: t("users.statusLocked") },
-              ]}
-            />
+          <Form.Item name="type" label={t("users.type")}>
+            <Input disabled={isFieldDisabled("type")} className="mt-2" />
           </Form.Item>
         </div>
       </section>

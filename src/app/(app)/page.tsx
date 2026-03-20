@@ -22,7 +22,7 @@ export default function Home() {
                 <CountUp
                   end={card.value}
                   duration={900}
-                  format={(v) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  format={(v) => String(v).replaceAll(/\B(?=(\d{3})+(?!\d))/g, ",")}
                 />
               ) : (
                 card.value

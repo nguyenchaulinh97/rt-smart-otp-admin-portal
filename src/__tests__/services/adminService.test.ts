@@ -30,7 +30,10 @@ describe("adminService", () => {
     expect(request).toHaveBeenNthCalledWith(
       1,
       "/admin",
-      expect.objectContaining({ method: "POST", body: JSON.stringify({ username: "u", password: "p", created_by: "system" }) }),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ username: "u", password: "p", created_by: "system" }),
+      }),
     );
     expect(request).toHaveBeenNthCalledWith(
       2,
@@ -44,4 +47,3 @@ describe("adminService", () => {
     );
   });
 });
-

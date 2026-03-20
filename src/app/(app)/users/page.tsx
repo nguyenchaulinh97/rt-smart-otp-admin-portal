@@ -26,8 +26,6 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [selectedApp, setSelectedApp] = useState<string | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const {
     data,
@@ -37,7 +35,8 @@ export default function UsersPage() {
   } = useMockQuery<UserRow[]>(() => otpService.getUsers());
   const rows = useMemo(() => data ?? [], [data]);
   const handleBulkAction =
-    (action: string, label: string, variant?: "danger" | "primary") => async (ids: string[]) => {
+    (action: "lock" | "unlock" | "reset", label: string, variant?: "danger" | "primary") =>
+    async (ids: string[]) => {
       if (ids.length === 0) return;
       const accepted = await confirm({
         title: t("ui.confirmTitle"),
@@ -48,41 +47,42 @@ export default function UsersPage() {
       if (!accepted) return;
       setIsLoading(true);
       setIsError(false);
-      window.setTimeout(() => {
-        setIsLoading(false);
+      try {
+        await otpService.bulkUserAction(action, ids);
         toast({ variant: "success", message: t("ui.toastBulk") });
-      }, 400);
-      void action;
-      void ids;
+      } catch {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
     };
+  const runBulkAction = (action: "lock" | "unlock" | "reset", label: string, variant?: "danger" | "primary") => {
+    const handler = handleBulkAction(action, label, variant);
+    return (ids: string[]) => {
+      handler(ids).catch(() => {
+        // ignore
+      });
+    };
+  };
   const resolvedLoading = isLoading || isFetching;
-  const resolvedError = isError ? t("table.error") : error ? t("table.error") : undefined;
-  const appOptions = useMemo(
-    () =>
-      Array.from(new Set(rows.map((row) => row.appId))).map((value) => ({ label: value, value })),
-    [rows],
-  );
-  const groupOptions = useMemo(
-    () =>
-      Array.from(new Set(rows.map((row) => row.group))).map((value) => ({ label: value, value })),
-    [rows],
-  );
+  const resolvedError = isError || error ? t("table.error") : undefined;
   const statusOptions = useMemo(
     () =>
-      Array.from(new Set(rows.map((row) => row.status))).map((value) => ({
-        label: getStatusLabel(value, t),
-        value,
+      Array.from(new Set(rows.map((row) => row.status).filter(Boolean))).map((value) => ({
+        label: getStatusLabel(value as "Active" | "Locked", t),
+        value: value as string,
       })),
     [rows, t],
   );
   const filteredRows = rows.filter((row) => {
+    const query = searchValue.toLowerCase();
     const matchesSearch = searchValue
-      ? row.id.toLowerCase().includes(searchValue.toLowerCase())
+      ? [row.id, row.username, row.name, row.email, row.cif]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(query))
       : true;
-    const matchesApp = selectedApp ? row.appId === selectedApp : true;
-    const matchesGroup = selectedGroup ? row.group === selectedGroup : true;
     const matchesStatus = selectedStatus ? row.status === selectedStatus : true;
-    return matchesSearch && matchesApp && matchesGroup && matchesStatus;
+    return matchesSearch && matchesStatus;
   });
 
   return (
@@ -103,7 +103,7 @@ export default function UsersPage() {
             key: "lock",
             label: t("users.bulkLock"),
             variant: "danger",
-            onClick: handleBulkAction("lock", t("users.bulkLock"), "danger"),
+            onClick: runBulkAction("lock", t("users.bulkLock"), "danger"),
             disabled: !canAccess(role, "users:lock"),
             disabledReason: t("ui.permissionDenied"),
           },
@@ -111,49 +111,31 @@ export default function UsersPage() {
             key: "unlock",
             label: t("users.bulkUnlock"),
             variant: "secondary",
-            onClick: handleBulkAction("unlock", t("users.bulkUnlock")),
+            onClick: runBulkAction("unlock", t("users.bulkUnlock")),
             disabled: !canAccess(role, "users:unlock"),
             disabledReason: t("ui.permissionDenied"),
           },
           {
             key: "reset",
             label: t("users.bulkReset"),
-            onClick: handleBulkAction("reset", t("users.bulkReset")),
+            onClick: runBulkAction("reset", t("users.bulkReset")),
             disabled: !canAccess(role, "users:reset"),
             disabledReason: t("ui.permissionDenied"),
           },
         ]}
         filterValues={{
           userId: searchValue,
-          appId: selectedApp ?? "",
-          group: selectedGroup ?? "",
           status: selectedStatus ?? "",
         }}
         onFilterChange={(key, value) => {
           if (key === "userId") setSearchValue(value);
-          if (key === "appId") setSelectedApp(value ? value : null);
-          if (key === "group") setSelectedGroup(value ? value : null);
-          if (key === "status") setSelectedStatus(value ? value : null);
+          if (key === "status") setSelectedStatus(value ?? null);
         }}
         filters={[
           {
             key: "userId",
             label: t("users.filterUser"),
             placeholder: t("placeholders.userId"),
-          },
-          {
-            key: "appId",
-            label: t("users.filterApp"),
-            placeholder: t("placeholders.appId"),
-            type: "select",
-            options: appOptions,
-          },
-          {
-            key: "group",
-            label: t("users.filterGroup"),
-            placeholder: t("placeholders.group"),
-            type: "select",
-            options: groupOptions,
           },
           {
             key: "status",
@@ -179,30 +161,41 @@ export default function UsersPage() {
             sortValue: (row) => row.id,
           },
           {
-            key: "appId",
-            header: t("users.app"),
-            render: (row) => row.appId,
-            sortValue: (row) => row.appId,
+            key: "username",
+            header: t("users.username"),
+            render: (row) => row.username,
+            sortValue: (row) => row.username,
           },
           {
-            key: "group",
-            header: t("users.group"),
-            render: (row) => row.group,
-            sortValue: (row) => row.group,
+            key: "name",
+            header: t("users.name"),
+            render: (row) => row.name,
+            sortValue: (row) => row.name,
+          },
+          {
+            key: "email",
+            header: t("users.email"),
+            render: (row) => row.email,
+            sortValue: (row) => row.email,
+          },
+          {
+            key: "cif",
+            header: t("users.cif"),
+            render: (row) => row.cif,
+            sortValue: (row) => row.cif,
           },
           {
             key: "status",
             header: t("users.status"),
-            render: (row) => (
-              <Tag color={getStatusColor(row.status)}>{getStatusLabel(row.status, t)}</Tag>
-            ),
-            sortValue: (row) => row.status,
-          },
-          {
-            key: "lastActivity",
-            header: t("users.lastActivity"),
-            render: (row) => row.lastActivity,
-            sortValue: (row) => row.lastActivity,
+            render: (row) =>
+              row.status ? (
+                <Tag color={getStatusColor(row.status)}>
+                  {getStatusLabel(row.status, t)}
+                </Tag>
+              ) : (
+                t("table.empty")
+              ),
+            sortValue: (row) => row.status ?? "",
           },
         ]}
         rows={filteredRows}

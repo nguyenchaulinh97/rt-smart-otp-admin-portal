@@ -50,8 +50,8 @@ export function useLogin() {
     }
     // store token and notify other windows
     try {
-      localStorage.setItem("auth:token", token);
-      window.dispatchEvent(new Event("auth:state-change"));
+      globalThis.localStorage.setItem("auth:token", token);
+      globalThis.dispatchEvent(new Event("auth:state-change"));
     } catch {}
     return data;
   };

@@ -1,12 +1,13 @@
 export type UserRecord = {
   id: string;
+  username: string;
   name: string;
   email: string;
-  appId: string;
-  group: string;
-  status: "Active" | "Locked";
-  createdAt: string;
-  lastActivity: string;
+  cif: string;
+  status?: "Active" | "Locked";
+  type?: string;
+  createdAt?: string;
+  lastActivity?: string;
 };
 
 export type AppRecord = {
@@ -78,83 +79,91 @@ export type TransactionRecord = {
 export const usersFixture: UserRecord[] = [
   {
     id: "u_10234",
+    username: "lan.nguyen",
     name: "Lan Nguyen",
     email: "lan.nguyen@company.com",
-    appId: "fintech",
-    group: "Retail",
+    cif: "CIF10234",
     status: "Active",
     createdAt: "2024-11-02",
     lastActivity: "2 minutes ago",
+    type: "Retail",
   },
   {
     id: "u_10412",
+    username: "minh.tran",
     name: "Minh Tran",
     email: "minh.tran@company.com",
-    appId: "broker",
-    group: "VIP",
+    cif: "CIF10412",
     status: "Locked",
     createdAt: "2024-10-12",
     lastActivity: "10 minutes ago",
+    type: "VIP",
   },
   {
     id: "u_10988",
+    username: "huy.pham",
     name: "Huy Pham",
     email: "huy.pham@company.com",
-    appId: "partner",
-    group: "Partner",
+    cif: "CIF10988",
     status: "Active",
     createdAt: "2024-08-19",
     lastActivity: "1 hour ago",
+    type: "Partner",
   },
   {
     id: "u_11221",
+    username: "thao.le",
     name: "Thao Le",
     email: "thao.le@company.com",
-    appId: "broker",
-    group: "Retail",
+    cif: "CIF11221",
     status: "Active",
     createdAt: "2024-09-02",
     lastActivity: "5 hours ago",
+    type: "Retail",
   },
   {
     id: "u_11305",
+    username: "khoa.bui",
     name: "Khoa Bui",
     email: "khoa.bui@company.com",
-    appId: "fintech",
-    group: "VIP",
+    cif: "CIF11305",
     status: "Locked",
     createdAt: "2024-07-21",
     lastActivity: "1 day ago",
+    type: "VIP",
   },
   {
     id: "u_11478",
+    username: "mai.do",
     name: "Mai Do",
     email: "mai.do@company.com",
-    appId: "partner",
-    group: "Partner",
+    cif: "CIF11478",
     status: "Active",
     createdAt: "2024-06-18",
     lastActivity: "2 days ago",
+    type: "Partner",
   },
   {
     id: "u_11890",
+    username: "quang.vu",
     name: "Quang Vu",
     email: "quang.vu@company.com",
-    appId: "fintech",
-    group: "Retail",
+    cif: "CIF11890",
     status: "Active",
     createdAt: "2024-10-05",
     lastActivity: "3 hours ago",
+    type: "Retail",
   },
   {
     id: "u_12014",
+    username: "lien.pham",
     name: "Lien Pham",
     email: "lien.pham@company.com",
-    appId: "broker",
-    group: "VIP",
+    cif: "CIF12014",
     status: "Active",
     createdAt: "2024-05-14",
     lastActivity: "4 days ago",
+    type: "VIP",
   },
 ];
 

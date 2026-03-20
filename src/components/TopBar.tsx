@@ -9,21 +9,28 @@ import { usePathname, useRouter } from "next/navigation";
 export default function TopBar({
   onOpenMobile,
   onToggleSidebar,
-}: {
+}: Readonly<{
   onOpenMobile?: () => void;
   onToggleSidebar?: () => void;
-}) {
+}>) {
   const { locale, setLocale, t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
 
+  const resolveLabel = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
+  const switchToDarkLabel = resolveLabel("ui.switchToDark", "Switch to dark theme");
+  const switchToLightLabel = resolveLabel("ui.switchToLight", "Switch to light theme");
+
   const handleLogout = () => {
     localStorage.removeItem("auth:loggedIn");
     localStorage.removeItem("auth:token");
     try {
-      window.dispatchEvent(new Event("auth:state-change"));
-      window.dispatchEvent(new Event("storage"));
+      globalThis.dispatchEvent(new Event("auth:state-change"));
+      globalThis.dispatchEvent(new Event("storage"));
     } catch {
       // ignore
     }
@@ -32,8 +39,8 @@ export default function TopBar({
 
   const section = (() => {
     if (!pathname || pathname === "/") return "dashboard";
-    const parts = pathname.split("/").filter(Boolean);
-    return parts[0] || "dashboard";
+    const first = pathname.split("/").find(Boolean);
+    return first || "dashboard";
   })();
 
   const headerTitle = t(`${section}.title`) || t("app.headerTitle");
@@ -54,7 +61,7 @@ export default function TopBar({
       </div>
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 text-xs text-slate-500">
-          <Tooltip title={locale === "en" ? "Change language" : "Đổi ngôn ngữ"}>
+          <Tooltip title={t("ui.changeLanguage")}>
             <Select
               value={locale}
               onChange={(value) => setLocale(value as "en" | "vi")}
@@ -81,21 +88,17 @@ export default function TopBar({
             />
           </Tooltip>
         </label>
-        <Tooltip title={locale === "en" ? "Change theme" : "Đổi theme"}>
+        <Tooltip title={t("ui.changeTheme")}>
           <Button
             type="text"
             onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+            aria-label={theme === "dark" ? switchToLightLabel : switchToDarkLabel}
           >
             {theme === "dark" ? <SunOutlined /> : <MoonOutlined />}
           </Button>
         </Tooltip>
-        <Tooltip title={locale === "en" ? "Sign Out" : "Đăng xuất"}>
-          <Button
-            type="text"
-            onClick={handleLogout}
-            aria-label={locale === "en" ? "Sign Out" : "Đăng xuất"}
-          >
+        <Tooltip title={t("ui.signOut")}>
+          <Button type="text" onClick={handleLogout} aria-label={t("ui.signOut")}>
             <LogoutOutlined />
           </Button>
         </Tooltip>

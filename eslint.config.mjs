@@ -14,6 +14,10 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "node_modules/**",
     "next-env.d.ts",
+    // Mini app nested under repo (avoid linting its .next / build output)
+    "simulator-login-app/.next/**",
+    "simulator-login-app/node_modules/**",
+    "simulator-login-app/coverage/**",
   ]),
   // Turn off explicit any rule globally
   {

@@ -38,22 +38,78 @@ const toastStyles: Record<ToastVariant, string> = {
   info: "border-slate-200 bg-white text-slate-700",
 };
 
-export default function UiProvider({ children }: { children: React.ReactNode }) {
+const createToastId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const scheduleToastRemoval = (id: string, onRemove: (id: string) => void) => {
+  globalThis.setTimeout(onRemove, 2800, id);
+};
+
+const removeToastById = (
+  toastId: string,
+  setToasts: React.Dispatch<React.SetStateAction<ToastItem[]>>,
+) => setToasts((prev) => prev.filter((item) => item.id !== toastId));
+
+const ToastList = ({ toasts }: { toasts: ToastItem[] }) => (
+  <div className="pointer-events-none fixed right-6 top-6 z-50 space-y-2">
+    {toasts.map((item) => (
+      <div
+        key={item.id}
+        className={`pointer-events-auto w-72 rounded-lg border px-4 py-3 text-sm shadow ${toastStyles[item.variant]}`}
+      >
+        {item.title ? <p className="text-xs font-semibold uppercase">{item.title}</p> : null}
+        <p className="mt-1 text-sm font-medium">{item.message}</p>
+      </div>
+    ))}
+  </div>
+);
+
+type ConfirmDialogProps = {
+  state: ConfirmState;
+  onResolve: (value: boolean) => void;
+  t: (key: string) => string;
+};
+
+const ConfirmDialog = ({ state, onResolve, t }: ConfirmDialogProps) => (
+  <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4">
+    <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-lg">
+      <h2 className="text-sm font-semibold text-slate-900">
+        {state.title ?? t("ui.confirmTitle")}
+      </h2>
+      <p className="mt-2 text-sm text-slate-600">{state.message}</p>
+      <div className="mt-6 flex items-center justify-end gap-3">
+        <Button type="default" onClick={() => onResolve(false)}>
+          {state.cancelLabel ?? t("ui.cancel")}
+        </Button>
+        <Button type="primary" danger={state.variant === "danger"} onClick={() => onResolve(true)}>
+          {state.confirmLabel ?? t("ui.confirm")}
+        </Button>
+      </div>
+    </div>
+  </div>
+);
+
+export default function UiProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const { t } = useI18n();
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
   const resolveRef = useRef<((value: boolean) => void) | null>(null);
 
-  const toast = useCallback((input: ToastInput) => {
-    const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    setToasts((prev) => [...prev, { ...input, id }]);
-    window.setTimeout(() => {
-      setToasts((prev) => prev.filter((item) => item.id !== id));
-    }, 2800);
-  }, []);
+  const handleRemoveToast = useCallback(
+    (toastId: string) => removeToastById(toastId, setToasts),
+    [],
+  );
+
+  const toast = useCallback(
+    (input: ToastInput) => {
+      const id = createToastId();
+      setToasts((prev) => [...prev, { ...input, id }]);
+      scheduleToastRemoval(id, handleRemoveToast);
+    },
+    [handleRemoveToast],
+  );
 
   const confirm = useCallback((options: ConfirmOptions) => {
-    const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const id = createToastId();
     setConfirmState({ ...options, id });
     return new Promise<boolean>((resolve) => {
       resolveRef.current = resolve;
@@ -71,40 +127,8 @@ export default function UiProvider({ children }: { children: React.ReactNode }) 
   return (
     <UiContext.Provider value={value}>
       {children}
-      <div className="pointer-events-none fixed right-6 top-6 z-50 space-y-2">
-        {toasts.map((item) => (
-          <div
-            key={item.id}
-            className={`pointer-events-auto w-72 rounded-lg border px-4 py-3 text-sm shadow ${toastStyles[item.variant]}`}
-          >
-            {item.title ? <p className="text-xs font-semibold uppercase">{item.title}</p> : null}
-            <p className="mt-1 text-sm font-medium">{item.message}</p>
-          </div>
-        ))}
-      </div>
-
-      {confirmState ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4">
-          <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-lg">
-            <h2 className="text-sm font-semibold text-slate-900">
-              {confirmState.title ?? t("ui.confirmTitle")}
-            </h2>
-            <p className="mt-2 text-sm text-slate-600">{confirmState.message}</p>
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <Button type="default" onClick={() => handleResolve(false)}>
-                {confirmState.cancelLabel ?? t("ui.cancel")}
-              </Button>
-              <Button
-                type="primary"
-                danger={confirmState.variant === "danger"}
-                onClick={() => handleResolve(true)}
-              >
-                {confirmState.confirmLabel ?? t("ui.confirm")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ToastList toasts={toasts} />
+      {confirmState ? <ConfirmDialog state={confirmState} onResolve={handleResolve} t={t} /> : null}
     </UiContext.Provider>
   );
 }

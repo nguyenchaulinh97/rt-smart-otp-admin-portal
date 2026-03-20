@@ -7,15 +7,15 @@ import {
   DashboardOutlined,
   FileTextOutlined,
   HeartOutlined,
+  MenuOutlined,
   MobileOutlined,
   QrcodeOutlined,
   SafetyCertificateOutlined,
   SafetyOutlined,
   SwapOutlined,
   UserOutlined,
-  MenuOutlined,
 } from "@ant-design/icons";
-import { Button, Layout, Menu, Typography } from "antd";
+import { Button, Layout, Menu, Tag, Typography } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -27,38 +27,65 @@ type SidebarProps = {
   onCollapse?: (collapsed: boolean) => void;
 };
 
-const defaultItems = (t: (k: string) => string) => [
-  { label: t("nav.dashboard"), href: "/", icon: <DashboardOutlined /> },
-  { label: t("nav.admins"), href: "/admins", icon: <UserOutlined /> },
-  { label: t("nav.applications"), href: "/applications", icon: <AppstoreOutlined /> },
-  { label: t("nav.users"), href: "/users", icon: <UserOutlined /> },
-  { label: t("nav.apps"), href: "/apps", icon: <AppstoreOutlined /> },
-  { label: t("nav.tokens"), href: "/tokens", icon: <QrcodeOutlined /> },
-  { label: t("nav.transactions"), href: "/transactions", icon: <SwapOutlined /> },
-  { label: t("nav.devices"), href: "/devices", icon: <MobileOutlined /> },
-  { label: t("nav.policies"), href: "/policies", icon: <SafetyOutlined /> },
-  { label: t("nav.verifications"), href: "/verifications", icon: <SafetyCertificateOutlined /> },
-  { label: t("nav.health"), href: "/health", icon: <HeartOutlined /> },
-  { label: t("nav.risk"), href: "/risk", icon: <AuditOutlined /> },
-  { label: t("nav.auditAdvanced"), href: "/audit-advanced", icon: <AuditOutlined /> },
-  { label: t("nav.logs"), href: "/logs", icon: <FileTextOutlined /> },
-];
+const DEMO_HREFS = new Set([
+  "/",
+  "/tokens",
+  "/transactions",
+  "/devices",
+  "/policies",
+  "/verifications",
+  "/health",
+  "/risk",
+  "/audit-advanced",
+]);
+
+const withDemoTag = (label: string, enabled: boolean) =>
+  enabled ? (
+    <span className="inline-flex items-center gap-2">
+      <span>{label}</span>
+      <Tag color="gold" style={{ marginInlineEnd: 0 }}>
+        Demo
+      </Tag>
+    </span>
+  ) : (
+    label
+  );
+
+const defaultItems = (t: (k: string) => string) =>
+  [
+    { label: t("nav.dashboard"), href: "/", icon: <DashboardOutlined /> },
+    { label: t("nav.admins"), href: "/admins", icon: <UserOutlined /> },
+    { label: t("nav.applications"), href: "/applications", icon: <AppstoreOutlined /> },
+    { label: t("nav.users"), href: "/users", icon: <UserOutlined /> },
+    { label: t("nav.tokens"), href: "/tokens", icon: <QrcodeOutlined /> },
+    { label: t("nav.transactions"), href: "/transactions", icon: <SwapOutlined /> },
+    { label: t("nav.devices"), href: "/devices", icon: <MobileOutlined /> },
+    { label: t("nav.policies"), href: "/policies", icon: <SafetyOutlined /> },
+    { label: t("nav.verifications"), href: "/verifications", icon: <SafetyCertificateOutlined /> },
+    { label: t("nav.health"), href: "/health", icon: <HeartOutlined /> },
+    { label: t("nav.risk"), href: "/risk", icon: <AuditOutlined /> },
+    { label: t("nav.auditAdvanced"), href: "/audit-advanced", icon: <AuditOutlined /> },
+    { label: t("nav.logs"), href: "/logs", icon: <FileTextOutlined /> },
+  ].map((item) => ({
+    ...item,
+    label: withDemoTag(item.label, DEMO_HREFS.has(item.href)),
+  }));
 
 export default function Sidebar({
   plain,
   onNavigate,
   collapsed: collapsedProp,
   onCollapse,
-}: SidebarProps) {
+}: Readonly<SidebarProps>) {
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useI18n();
 
   // support controlled collapsed prop; otherwise use internal state persisted to localStorage
   const [internalCollapsed, setInternalCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
+    if (!globalThis.window) return false;
     try {
-      return localStorage.getItem("ui:sidebar-collapsed") === "true";
+      return globalThis.localStorage.getItem("ui:sidebar-collapsed") === "true";
     } catch {
       return false;
     }
@@ -66,7 +93,7 @@ export default function Sidebar({
 
   useEffect(() => {
     try {
-      localStorage.setItem(
+      globalThis.localStorage.setItem(
         "ui:sidebar-collapsed",
         (collapsedProp ?? internalCollapsed) ? "true" : "false",
       );
@@ -115,7 +142,7 @@ export default function Sidebar({
             size="small"
             icon={<MenuOutlined />}
             onClick={() => onNavigate?.()}
-            aria-label="Close menu"
+            aria-label={t("ui.closeMenu")}
           />
         </div>
 

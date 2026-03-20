@@ -37,9 +37,9 @@ const resolveBrowserLocale = (): Locale => {
 
 export const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-export default function LanguageProvider({ children }: { children: React.ReactNode }) {
+export default function LanguageProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const getClientSnapshot = (): Locale => {
-    if (typeof window === "undefined") return "en";
+    if (globalThis.window === undefined) return "en";
     const stored = localStorage.getItem("admin:locale");
     if (stored === "en" || stored === "vi") return stored;
     return resolveBrowserLocale();
@@ -47,13 +47,13 @@ export default function LanguageProvider({ children }: { children: React.ReactNo
 
   const locale = useSyncExternalStore<Locale>(
     (callback) => {
-      if (typeof window === "undefined") return () => undefined;
+      if (globalThis.window === undefined) return () => undefined;
       const handler = () => callback();
-      window.addEventListener("storage", handler);
-      window.addEventListener(LOCALE_EVENT, handler);
+      globalThis.window.addEventListener("storage", handler);
+      globalThis.window.addEventListener(LOCALE_EVENT, handler);
       return () => {
-        window.removeEventListener("storage", handler);
-        window.removeEventListener(LOCALE_EVENT, handler);
+        globalThis.window.removeEventListener("storage", handler);
+        globalThis.window.removeEventListener(LOCALE_EVENT, handler);
       };
     },
     getClientSnapshot,
@@ -68,9 +68,9 @@ export default function LanguageProvider({ children }: { children: React.ReactNo
     };
 
     const setLocaleSafe = (next: Locale) => {
-      if (typeof window !== "undefined") {
+      if (globalThis.window !== undefined) {
         localStorage.setItem("admin:locale", next);
-        window.dispatchEvent(new Event(LOCALE_EVENT));
+        globalThis.window.dispatchEvent(new Event(LOCALE_EVENT));
       }
     };
 

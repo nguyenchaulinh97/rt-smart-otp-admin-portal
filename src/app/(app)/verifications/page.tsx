@@ -45,6 +45,17 @@ const sessionsFixture: VerificationSession[] = [
   },
 ];
 
+const getStatusColor = (status: VerificationSession["status"]) => {
+  switch (status) {
+    case "Locked":
+      return "red";
+    case "Verified":
+      return "green";
+    default:
+      return "gold";
+  }
+};
+
 export default function VerificationsPage() {
   const { t } = useI18n();
   const confirm = useConfirm();
@@ -96,7 +107,7 @@ export default function VerificationsPage() {
         }}
         onFilterChange={(key, value) => {
           if (key === "userId") setSearchValue(value);
-          if (key === "status") setSelectedStatus(value ? value : null);
+          if (key === "status") setSelectedStatus(value ?? null);
         }}
         filters={[
           {
@@ -146,38 +157,32 @@ export default function VerificationsPage() {
           {
             key: "status",
             header: t("verifications.status"),
-            render: (row) => (
-              <Tag
-                color={
-                  row.status === "Locked" ? "red" : row.status === "Verified" ? "green" : "gold"
-                }
-              >
-                {row.status}
-              </Tag>
-            ),
+            render: (row) => <Tag color={getStatusColor(row.status)}>{row.status}</Tag>,
             sortValue: (row) => row.status,
           },
           {
             key: "actions",
             header: t("verifications.actions"),
-            render: () => (
-              <Tooltip
-                title={
-                  !canAccess(role, "verifications:resend") ? t("ui.permissionDenied") : undefined
-                }
-              >
-                <span>
-                  <Button
-                    type="default"
-                    size="small"
-                    disabled={!canAccess(role, "verifications:resend")}
-                    onClick={handleResend}
-                  >
-                    {t("verifications.resend")}
-                  </Button>
-                </span>
-              </Tooltip>
-            ),
+            render: () => {
+              const canResend = canAccess(role, "verifications:resend");
+              const resendDisabled = !canResend;
+              const permissionDenied = t("ui.permissionDenied");
+              const resendTooltip = resendDisabled ? permissionDenied : undefined;
+              return (
+                <Tooltip title={resendTooltip}>
+                  <span>
+                    <Button
+                      type="default"
+                      size="small"
+                      disabled={resendDisabled}
+                      onClick={handleResend}
+                    >
+                      {t("verifications.resend")}
+                    </Button>
+                  </span>
+                </Tooltip>
+              );
+            },
           },
         ]}
         rows={filteredRows}

@@ -2,22 +2,35 @@ import { mockApi } from "@/mock/api";
 
 describe("mockApi", () => {
   it("exposes all list/detail methods and resolves data", async () => {
-    const [users, user, apps, app, tokens, token, policies, policy, logs, devices, device, verifyLogs, transactions] =
-      await Promise.all([
-        mockApi.getUsers({ latencyMs: 0 }),
-        mockApi.getUser("unknown", { latencyMs: 0 }),
-        mockApi.getApps({ latencyMs: 0 }),
-        mockApi.getApp("unknown", { latencyMs: 0 }),
-        mockApi.getTokens({ latencyMs: 0 }),
-        mockApi.getToken("unknown", { latencyMs: 0 }),
-        mockApi.getPolicies({ latencyMs: 0 }),
-        mockApi.getPolicy("unknown", { latencyMs: 0 }),
-        mockApi.getAuditLogs({ latencyMs: 0 }),
-        mockApi.getDevices({ latencyMs: 0 }),
-        mockApi.getDevice("unknown", { latencyMs: 0 }),
-        mockApi.getVerifyLogs({ latencyMs: 0 }),
-        mockApi.getTransactions({ latencyMs: 0 }),
-      ]);
+    const [
+      users,
+      user,
+      apps,
+      app,
+      tokens,
+      token,
+      policies,
+      policy,
+      logs,
+      devices,
+      device,
+      verifyLogs,
+      transactions,
+    ] = await Promise.all([
+      mockApi.getUsers({ latencyMs: 0 }),
+      mockApi.getUser("unknown", { latencyMs: 0 }),
+      mockApi.getApps({ latencyMs: 0 }),
+      mockApi.getApp("unknown", { latencyMs: 0 }),
+      mockApi.getTokens({ latencyMs: 0 }),
+      mockApi.getToken("unknown", { latencyMs: 0 }),
+      mockApi.getPolicies({ latencyMs: 0 }),
+      mockApi.getPolicy("unknown", { latencyMs: 0 }),
+      mockApi.getAuditLogs({ latencyMs: 0 }),
+      mockApi.getDevices({ latencyMs: 0 }),
+      mockApi.getDevice("unknown", { latencyMs: 0 }),
+      mockApi.getVerifyLogs({ latencyMs: 0 }),
+      mockApi.getTransactions({ latencyMs: 0 }),
+    ]);
 
     expect(Array.isArray(users.data)).toBe(true);
     expect(user.data).toBeNull();

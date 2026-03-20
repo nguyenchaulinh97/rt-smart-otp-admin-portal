@@ -1,10 +1,28 @@
-import { renderHook, waitFor, act } from "@testing-library/react";
 import { useMockQuery } from "@/hooks/useMockQuery";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import type React from "react";
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+  Wrapper.displayName = "QueryClientWrapper";
+  return Wrapper;
+};
 
 describe("useMockQuery", () => {
   it("resolves data from response.data", async () => {
     const fetcher = jest.fn(async () => ({ data: { ok: true } }));
-    const { result } = renderHook(() => useMockQuery(fetcher));
+    const { result } = renderHook(() => useMockQuery(fetcher), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.data).toEqual({ ok: true });
@@ -15,7 +33,7 @@ describe("useMockQuery", () => {
     const fetcher = jest.fn(async () => {
       throw new Error("Boom");
     });
-    const { result } = renderHook(() => useMockQuery(fetcher));
+    const { result } = renderHook(() => useMockQuery(fetcher), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.data).toBeNull();
@@ -26,7 +44,7 @@ describe("useMockQuery", () => {
     const fetcher = jest.fn(async () => {
       throw "bad";
     });
-    const { result } = renderHook(() => useMockQuery(fetcher));
+    const { result } = renderHook(() => useMockQuery(fetcher), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.error).toBe("Unknown error");
@@ -34,7 +52,9 @@ describe("useMockQuery", () => {
 
   it("supports refetch with override options", async () => {
     const fetcher = jest.fn(async () => ({ data: 1 }));
-    const { result } = renderHook(() => useMockQuery(fetcher, { latencyMs: 1 }));
+    const { result } = renderHook(() => useMockQuery(fetcher, { latencyMs: 1 }), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 

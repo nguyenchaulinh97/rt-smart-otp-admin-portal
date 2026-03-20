@@ -1,10 +1,10 @@
 export const downloadCsv = (filename: string, rows: Array<Record<string, string | number>>) => {
-  if (typeof window === "undefined") return;
+  if (globalThis.window === undefined) return;
   if (rows.length === 0) return;
   const headers = Object.keys(rows[0]);
   const escape = (value: string | number) => {
     const raw = String(value ?? "");
-    return `"${raw.replace(/"/g, '""')}"`;
+    return `"${raw.replaceAll('"', '""')}"`;
   };
   const lines = [
     headers.join(","),
@@ -17,6 +17,6 @@ export const downloadCsv = (filename: string, rows: Array<Record<string, string 
   link.download = filename;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   URL.revokeObjectURL(url);
 };

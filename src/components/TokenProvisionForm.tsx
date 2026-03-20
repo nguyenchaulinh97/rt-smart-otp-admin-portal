@@ -11,7 +11,7 @@ export type TokenProvisionValues = {
   status: "Active" | "Locked";
 };
 
-type TokenProvisionFormProps = {
+type TokenProvisionFormProps = Readonly<{
   title: string;
   userOptions: string[];
   appOptions: string[];
@@ -20,7 +20,7 @@ type TokenProvisionFormProps = {
   onSubmit: (values: TokenProvisionValues) => Promise<void> | void;
   isReadOnly?: boolean;
   disabledReason?: string;
-};
+}>;
 
 export default function TokenProvisionForm({
   title,

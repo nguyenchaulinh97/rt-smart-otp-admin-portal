@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src",
+    "dev:simulator": "pnpm --dir simulator-login-app dev",
+    "build:simulator": "pnpm --dir simulator-login-app build",
+    "start:simulator": "pnpm --dir simulator-login-app start",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -14,7 +17,6 @@
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
     "@tanstack/react-query": "^5.90.21",
-    "@types/react-query": "^1.2.9",
     "antd": "^6.3.0",
     "next": "16.1.6",
     "react": "19.2.3",
@@ -22,9 +24,11 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@cspell/dict-vi-vn": "^3.0.6",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^14.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/dom": "^10.4.1",
     "@types/jest": "^29.5.3",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -39,5 +43,6 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "pnpm@10.32.1"
 }

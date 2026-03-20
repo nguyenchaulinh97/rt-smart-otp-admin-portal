@@ -43,7 +43,8 @@ export default function UserEditPage() {
     return <div className="text-sm text-slate-500">{t("table.empty")}</div>;
   }
 
-  const isReadOnly = !canAccess(role, "users:edit");
+  const canEditUser = canAccess(role, "users:edit");
+  const isReadOnly = !canEditUser;
 
   return (
     <UserForm
@@ -53,20 +54,24 @@ export default function UserEditPage() {
       disabledReason={t("ui.permissionDenied")}
       initialValues={{
         id: data.id,
+        username: data.username,
         name: data.name,
         email: data.email,
-        appId: data.appId,
-        group: data.group,
-        status: data.status,
+        cif: data.cif,
+        type: data.type ?? "",
       }}
+      editableFields={canEditUser ? ["type"] : []}
       onCancel={() => router.push(`/users/${data.id}`)}
-      onSubmit={async () => {
+      onSubmit={async (values) => {
         const accepted = await confirm({
           title: t("ui.confirmTitle"),
           message: t("ui.confirmSave"),
           confirmLabel: t("ui.confirm"),
         });
         if (!accepted) return;
+        if (values.type) {
+          await otpService.updateUserType(data.id, values.type);
+        }
         toast({ variant: "success", message: t("ui.toastSaved") });
         router.push(`/users/${data.id}`);
       }}
