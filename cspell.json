@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en,vi",
+  "import": ["@cspell/dict-vi-vn/cspell-ext.json"],
+  "ignorePaths": [
+    "node_modules/**",
+    ".next/**",
+    "out/**",
+    "build/**",
+    "coverage/**",
+    "pnpm-lock.yaml",
+    "*.tsbuildinfo",
+    "simulator-login-app/node_modules/**",
+    "simulator-login-app/.next/**",
+    "simulator-login-app/pnpm-lock.yaml"
+  ],
+  "words": ["otpauth", "totp"]
+}

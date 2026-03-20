@@ -3,5 +3,6 @@
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,
+  "cSpell.language": "en,vi",
   "cSpell.words": ["otpauth", "totp"]
 }

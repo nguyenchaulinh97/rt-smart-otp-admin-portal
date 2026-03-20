@@ -2,8 +2,6 @@
 
 # dependencies
 /node_modules
-# local pnpm store (if PNPM_STORE_DIR points here; do not commit)
-.pnpm-store/
 /.pnp
 .pnp.*
 .yarn/*

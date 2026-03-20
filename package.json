@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src",
+    "dev:simulator": "pnpm --dir simulator-login-app dev",
+    "build:simulator": "pnpm --dir simulator-login-app build",
+    "start:simulator": "pnpm --dir simulator-login-app start",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -21,6 +24,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@cspell/dict-vi-vn": "^3.0.6",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.3.2",
