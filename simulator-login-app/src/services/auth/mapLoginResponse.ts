@@ -1,4 +1,4 @@
-import type { LoginResult } from "@/services/auth/types";
+import type { LoginResult } from "../../services/auth/types";
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value !== null && typeof value === "object" && !Array.isArray(value)

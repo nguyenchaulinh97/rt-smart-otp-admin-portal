@@ -1,4 +1,4 @@
-import { mapLoginResponseToLoginResult } from "@/services/auth/mapLoginResponse";
+import { mapLoginResponseToLoginResult } from "../../../services/auth/mapLoginResponse";
 import type {
   AuthAdapter,
   LoginPayload,
@@ -7,7 +7,7 @@ import type {
   ResendResult,
   VerifyPayload,
   VerifyResult,
-} from "@/services/auth/types";
+} from "../../../services/auth/types";
 
 const getBase = () => process.env.NEXT_PUBLIC_AUTH_API_BASE_URL?.trim() ?? "";
 
@@ -34,8 +34,7 @@ const httpRequestJson = async <T>(
   options?: { contentType?: string },
 ): Promise<T> => {
   const contentType = options?.contentType ?? "application/json";
-  const body =
-    contentType === "text/plain" ? JSON.stringify(payload) : JSON.stringify(payload);
+  const body = contentType === "text/plain" ? JSON.stringify(payload) : JSON.stringify(payload);
 
   const response = await fetch(toUrl(path), {
     method: "POST",

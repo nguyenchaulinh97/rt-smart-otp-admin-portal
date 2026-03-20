@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthShell } from "@/components/AuthShell";
+import { AuthShell } from "../../components/AuthShell";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useSyncExternalStore } from "react";

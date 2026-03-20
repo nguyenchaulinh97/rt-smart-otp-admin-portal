@@ -6,7 +6,7 @@ import type {
   ResendResult,
   VerifyPayload,
   VerifyResult,
-} from "@/services/auth/types";
+} from "../../../services/auth/types";
 
 const jsonRequest = async <T>(url: string, body: unknown): Promise<T> => {
   const response = await fetch(url, {

@@ -1,7 +1,7 @@
 "use client";
 
-import { AuthShell } from "@/components/AuthShell";
-import { authClient } from "@/services/auth/authClient";
+import { AuthShell } from "../../components/AuthShell";
+import { authClient } from "../../services/auth/authClient";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { AuthShell } from "@/components/AuthShell";
-import { OtpSixInputs } from "@/components/OtpSixInputs";
-import { authClient } from "@/services/auth/authClient";
+import { AuthShell } from "../../components/AuthShell";
+import { OtpSixInputs } from "../../components/OtpSixInputs";
+import { authClient } from "../../services/auth/authClient";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
