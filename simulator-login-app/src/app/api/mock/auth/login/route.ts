@@ -1,4 +1,4 @@
-import { createChallenge } from "@/server/mockOtpStore";
+import { createChallenge } from "../../../../../server/mockOtpStore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

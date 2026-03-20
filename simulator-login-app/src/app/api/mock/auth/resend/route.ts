@@ -1,4 +1,4 @@
-import { getChallenge, rotateChallengeOtp } from "@/server/mockOtpStore";
+import { getChallenge, rotateChallengeOtp } from "../../../../../server/mockOtpStore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

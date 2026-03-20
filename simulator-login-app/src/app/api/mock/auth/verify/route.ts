@@ -1,4 +1,4 @@
-import { consumeAttempt, getChallenge, removeChallenge } from "@/server/mockOtpStore";
+import { consumeAttempt, getChallenge, removeChallenge } from "../../../../../server/mockOtpStore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
